@@ -1,0 +1,6 @@
+brand,model,generation,start_year,end_year,is_facelift,market,trim_name,engine_code,fuel_type,displacement_cc,power_hp,torque_nm,transmission_type,gears,drive,market_scope,spec_category,spec_name,spec_value,source_url,source_title,source_type,source_market_scope,source_retrieved_at,source_page,source_note
+Volkswagen,Golf,GEN_A,,,,TR,,,,,,,,,,,,,,,,,,,
+Volkswagen,Golf,GEN_B,,,,TR,,,,,,,,,,,,,,,,,,,
+Volkswagen,Golf,GEN_A,,,,TR,,,,,,,,,,,,Engine,Power,,,,,,,,
+Volkswagen,Golf,GEN_A,,,,TR,,,,,,,,,,,,Engine,Torque,,,,,,,,
+Volkswagen,Golf,GEN_B,,,,TR,,,,,,,,,,,,Engine,Power,,,,,,,,

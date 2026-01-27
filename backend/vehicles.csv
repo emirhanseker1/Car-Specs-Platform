@@ -1,0 +1,17 @@
+Brand,Model,Trim_Name,Year,HP,Torque_NM,Acceleration_0_100,Fuel_Type,Transmission,Drivetrain,Displacement_CC,Top_Speed_KMH,Fuel_Consumption_Combined,Body_Style,Image_URL
+BMW,3 Series,320i,2023,184,300,7.1,Benzin,Automatic,RWD,1998,240,5.8,Sedan,https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800
+BMW,X5,xDrive40i,2023,340,450,5.5,Benzin,Automatic,AWD,2998,250,8.1,SUV,https://images.unsplash.com/photo-1617531653332-bd46c24f2068?w=800
+Volkswagen,Golf,1.5 TSI 150 PS DSG,2023,150,250,8.5,Benzin,Automatic,FWD,1498,224,5.2,Hatchback,https://images.unsplash.com/photo-1622353219448-46a009f0d44f?w=800
+Volkswagen,Passat,2.0 TDI 150 PS DSG,2023,150,360,8.6,Dizel,Automatic,FWD,1968,228,4.5,Sedan,https://images.unsplash.com/photo-1621839673705-6617adf9e890?w=800
+Mercedes-Benz,C-Class,C 200,2023,204,300,7.3,Benzin,Automatic,RWD,1999,246,6.2,Sedan,https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=800
+Mercedes-Benz,GLE,GLE 350 de 4MATIC,2023,320,700,6.8,Hybrid,Automatic,AWD,1950,210,1.1,SUV,https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800
+Audi,A3,35 TFSI,2023,150,250,8.4,Benzin,Automatic,FWD,1498,232,5.4,Sedan,https://images.unsplash.com/photo-1610768764270-790fbec18178?w=800
+Audi,Q5,40 TDI quattro,2023,204,400,7.6,Dizel,Automatic,AWD,1968,227,5.9,SUV,https://images.unsplash.com/photo-1606611013016-969a43d1e1a1?w=800
+Toyota,Corolla,1.8 Hybrid,2023,122,142,10.9,Hybrid,CVT,FWD,1798,180,3.9,Sedan,https://images.unsplash.com/photo-1623869675781-80aa31012a5a?w=800
+Toyota,RAV4,2.5 Hybrid AWD,2023,218,221,8.1,Hybrid,CVT,AWD,2487,180,5.3,SUV,https://images.unsplash.com/photo-1617469767053-d3b523a0b982?w=800
+Ford,Focus,1.5 EcoBoost 150 PS,2023,150,240,8.9,Benzin,Manual,FWD,1497,210,5.7,Hatchback,https://images.unsplash.com/photo-1612825173281-9a193378527e?w=800
+Ford,Mustang,5.0 V8 GT,2023,450,529,4.3,Benzin,Manual,RWD,5038,250,12.5,Coupe,https://images.unsplash.com/photo-1584345604476-8ec5f5c4e1e7?w=800
+Renault,Clio,TCe 90,2023,90,160,11.9,Benzin,Manual,FWD,999,180,5.1,Hatchback,https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800
+Renault,Megane,E-Tech Electric,2023,220,300,7.4,Elektrik,Automatic,FWD,0,160,15.8,Hatchback,https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800
+Fiat,Egea,1.3 Multijet 95 PS,2023,95,200,11.2,Dizel,Manual,FWD,1248,185,4.2,Sedan,https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=800
+Fiat,500,1.0 Hybrid,2023,70,92,12.9,Hybrid,Manual,FWD,999,164,4.1,Hatchback,https://images.unsplash.com/photo-1600712242805-5f78671b24da?w=800
