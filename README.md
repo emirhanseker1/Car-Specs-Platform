@@ -2,7 +2,7 @@
 
 A comprehensive platform for viewing detailed technical specifications of vehicles, built with a modern Go backend and a React frontend.
 
-![Car Specs Screenshot](frontend/public/hero/hero-2.jpg)
+![Car Specs Screenshot](frontend/public/project-screenshot.png)
 
 ## Features
 
