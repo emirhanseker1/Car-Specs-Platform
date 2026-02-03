@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -45,6 +46,7 @@ func (h *BrandHandler) HandleCreateBrand(w http.ResponseWriter, r *http.Request)
 // HandleGetBrand handles GET /api/brands/:id
 func (h *BrandHandler) HandleGetBrand(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
+	log.Printf("🔍 DEBUG HandleGetBrand: received id='%s'", idStr)
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		http.Error(w, "Invalid brand ID", http.StatusBadRequest)
@@ -63,6 +65,7 @@ func (h *BrandHandler) HandleGetBrand(w http.ResponseWriter, r *http.Request) {
 
 // HandleListBrands handles GET /api/brands
 func (h *BrandHandler) HandleListBrands(w http.ResponseWriter, r *http.Request) {
+	log.Printf("🔍 DEBUG HandleListBrands: called")
 	brands, err := h.service.ListBrands()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

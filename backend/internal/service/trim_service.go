@@ -86,6 +86,16 @@ func (s *TrimService) ListTrimsByModel(modelID int64) ([]*models.Trim, error) {
 	return trims, nil
 }
 
+// ListTrimsByGeneration retrieves all trims for a generation
+func (s *TrimService) ListTrimsByGeneration(genID int64) ([]*models.Trim, error) {
+	// We might validate generation exists, but skipping for now
+	trims, err := s.trimRepo.ListByGeneration(genID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list trims: %w", err)
+	}
+	return trims, nil
+}
+
 // DeleteTrim deletes a trim
 func (s *TrimService) DeleteTrim(id int64) error {
 	// Check if trim exists

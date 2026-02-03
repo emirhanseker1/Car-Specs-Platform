@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/emirh/car-specs/backend/internal/models"
 )
@@ -140,4 +141,123 @@ func (r *ModelRepository) Delete(id int64) error {
 	}
 
 	return nil
+}
+
+// ListVehiclesByName retrieves aggregated vehicle list (Generation focused)
+func (r *ModelRepository) ListVehiclesByName(brandName string) ([]*models.VehicleListItem, error) {
+	query := `
+		SELECT 
+			COALESCE(g.id, 0), 
+			m.id,
+			MAX(b.name), 
+			MAX(m.name), 
+			COALESCE(g.code, ''), 
+			g.start_year, g.end_year,
+			GROUP_CONCAT(t.name)
+		FROM models m
+		JOIN brands b ON m.brand_id = b.id
+		LEFT JOIN generations g ON g.model_id = m.id
+		LEFT JOIN trims t ON t.generation_id = g.id
+		WHERE b.name = ?
+		GROUP BY m.id, g.id
+		ORDER BY MAX(m.name), g.start_year DESC
+	`
+
+	rows, err := r.db.Query(query, brandName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list vehicles: %w", err)
+	}
+	defer rows.Close()
+
+	var list []*models.VehicleListItem
+	for rows.Next() {
+		v := &models.VehicleListItem{}
+		var startYear, endYear sql.NullInt64
+		// var isFacelift sql.NullBool // Removed
+		var engines sql.NullString
+
+		// Order: g.id, m.id, b.name, m.name, g.code, start, end, engines
+		err := rows.Scan(
+			&v.ID,
+			&v.ModelID,
+			&v.Brand,
+			&v.Model,
+			&v.Generation,
+			&startYear, &endYear, &engines,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if startYear.Valid || endYear.Valid {
+			v.GenerationMeta = &models.GenerationMeta{}
+			if startYear.Valid {
+				y := int(startYear.Int64)
+				v.GenerationMeta.StartYear = &y
+			}
+			if endYear.Valid {
+				y := int(endYear.Int64)
+				v.GenerationMeta.EndYear = &y
+			}
+		}
+
+		if engines.Valid {
+			raw := strings.Split(engines.String, ",")
+			unique := make(map[string]bool)
+			for _, e := range raw {
+				e = strings.TrimSpace(e)
+				if e != "" && !unique[e] {
+					unique[e] = true
+					v.EngineOptions = append(v.EngineOptions, e)
+				}
+			}
+		}
+		list = append(list, v)
+	}
+	return list, nil
+}
+
+// GetGeneration retrieves a generation by ID with joined model/brand info
+func (r *ModelRepository) GetGeneration(id int64) (*models.Generation, *models.Model, error) {
+	query := `
+		SELECT 
+			g.id, g.model_id, g.code, g.name, g.start_year, g.end_year,
+			m.id, m.brand_id, m.name, m.body_style,
+			b.id, b.name, b.logo_url
+		FROM models m
+		JOIN generations g ON g.model_id = m.id
+		JOIN brands b ON m.brand_id = b.id
+		WHERE g.id = ?
+	`
+
+	g := &models.Generation{}
+	m := &models.Model{}
+	b := &models.Brand{}
+
+	var startYear, endYear sql.NullInt64
+
+	err := r.db.QueryRow(query, id).Scan(
+		&g.ID, &g.ModelID, &g.Code, &g.Name, &startYear, &endYear,
+		&m.ID, &m.BrandID, &m.Name, &m.BodyStyle,
+		&b.ID, &b.Name, &b.LogoURL,
+	)
+
+	if err != nil {
+		fmt.Printf("GetGeneration Error for ID %d: %v\n", id, err)
+		return nil, nil, err
+	}
+
+	if startYear.Valid {
+		g.StartYear = int(startYear.Int64)
+	}
+	if endYear.Valid {
+		y := int(endYear.Int64)
+		g.EndYear = &y
+	}
+
+	m.Brand = b
+	g.ModelID = m.ID // Already set
+
+	return g, m, nil
 }

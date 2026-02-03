@@ -84,16 +84,17 @@ func TitleCase(s string) string {
 	// Handle special cases
 	upper := strings.ToUpper(s)
 	switch upper {
-	case "BMW", "AUDI", "VW", "SUV", "MPV", "AWD", "FWD", "RWD", "CVT", "DCT":
+	case "BMW", "AUDI", "VW", "SUV", "MPV", "AWD", "FWD", "RWD", "CVT", "DCT", "TFSI", "TDI", "S TRONIC", "S-TRONIC":
 		return upper
 	}
 
 	words := strings.Fields(s)
 	for i, word := range words {
 		if len(word) > 0 {
+			upperWord := strings.ToUpper(word)
 			// Keep acronyms uppercase
-			if len(word) <= 3 && strings.ToUpper(word) == word {
-				words[i] = strings.ToUpper(word)
+			if (len(word) <= 3 && upperWord == word) || upperWord == "TFSI" || upperWord == "TDI" || upperWord == "DSG" {
+				words[i] = upperWord
 			} else {
 				words[i] = strings.ToUpper(string(word[0])) + strings.ToLower(word[1:])
 			}

@@ -1,0 +1,123 @@
+{
+    "Audi": {
+        "A3": {
+            "engine_years": {
+                "1.2 TFSI": {
+                    "start": 2010,
+                    "end": 2014,
+                    "notes": "8P facelift only"
+                },
+                "1.0 TFSI": {
+                    "start": 2016,
+                    "end": 2020,
+                    "notes": "8V facelift"
+                },
+                "1.4 TFSI": {
+                    "start": 2007,
+                    "end": 2020,
+                    "notes": "Multiple generations"
+                },
+                "1.5 TFSI": {
+                    "start": 2017,
+                    "end": null,
+                    "notes": "8V facelift and 8Y"
+                },
+                "1.6 FSI": {
+                    "start": 2003,
+                    "end": 2007,
+                    "notes": "8P only"
+                },
+                "1.6 TDI": {
+                    "start": 2009,
+                    "end": 2020,
+                    "notes": "8P facelift and 8V"
+                },
+                "1.8 T": {
+                    "start": 1996,
+                    "end": 2003,
+                    "notes": "8L only"
+                },
+                "1.8 TFSI": {
+                    "start": 2008,
+                    "end": 2016,
+                    "notes": "8P facelift and early 8V"
+                },
+                "1.9 TDI": {
+                    "start": 1996,
+                    "end": 2010,
+                    "notes": "8L and 8P"
+                },
+                "2.0 FSI": {
+                    "start": 2003,
+                    "end": 2008,
+                    "notes": "8P only"
+                },
+                "2.0 TDI": {
+                    "start": 2003,
+                    "end": null,
+                    "notes": "All generations"
+                },
+                "2.0 TFSI": {
+                    "start": 2004,
+                    "end": null,
+                    "notes": "All generations"
+                },
+                "2.5 TFSI": {
+                    "start": 2011,
+                    "end": null,
+                    "notes": "RS3 only"
+                },
+                "3.2 V6": {
+                    "start": 2003,
+                    "end": 2009,
+                    "notes": "8P only"
+                },
+                "30 TFSI": {
+                    "start": 2020,
+                    "end": null,
+                    "notes": "8Y new naming (1.0L)"
+                },
+                "35 TFSI": {
+                    "start": 2020,
+                    "end": null,
+                    "notes": "8Y new naming (1.5L)"
+                },
+                "40 TFSI": {
+                    "start": 2020,
+                    "end": null,
+                    "notes": "8Y new naming (2.0L)"
+                },
+                "30 TDI": {
+                    "start": 2020,
+                    "end": null,
+                    "notes": "8Y new naming (2.0L diesel)"
+                },
+                "35 TDI": {
+                    "start": 2020,
+                    "end": null,
+                    "notes": "8Y new naming"
+                },
+                "40 TFSIe": {
+                    "start": 2020,
+                    "end": null,
+                    "notes": "8Y PHEV"
+                },
+                "45 TFSIe": {
+                    "start": 2020,
+                    "end": null,
+                    "notes": "8Y PHEV"
+                },
+                "S3": {
+                    "start": 1999,
+                    "end": null,
+                    "notes": "All S3 variants"
+                },
+                "RS3": {
+                    "start": 2011,
+                    "end": null,
+                    "notes": "All RS3 variants"
+                }
+            }
+        }
+    }
+}

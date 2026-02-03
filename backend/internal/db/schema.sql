@@ -1,41 +1,102 @@
-CREATE TABLE IF NOT EXISTS vehicles (
+CREATE TABLE IF NOT EXISTS brands (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    brand TEXT DEFAULT 'Fiat',
-    model TEXT NOT NULL,
-    generation TEXT NOT NULL,
-    image_url TEXT,
-    link TEXT UNIQUE NOT NULL
+    name TEXT UNIQUE NOT NULL,
+    country TEXT,
+    logo_url TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS vehicle_generation_meta (
-    vehicle_id INTEGER PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS models (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    brand_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    body_style TEXT,
+    segment TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(brand_id) REFERENCES brands(id),
+    UNIQUE(brand_id, name)
+);
+
+CREATE TABLE IF NOT EXISTS generations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    model_id INTEGER NOT NULL,
+    code TEXT,
+    name TEXT,
     start_year INTEGER,
     end_year INTEGER,
-    is_facelift INTEGER DEFAULT 0,
-    market TEXT,
-    FOREIGN KEY(vehicle_id) REFERENCES vehicles(id)
+    is_facelift BOOLEAN DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(model_id) REFERENCES models(id)
 );
 
 CREATE TABLE IF NOT EXISTS trims (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    vehicle_id INTEGER NOT NULL,
+    generation_id INTEGER NOT NULL,
+    model_id INTEGER NOT NULL,
     name TEXT NOT NULL,
-    link TEXT UNIQUE NOT NULL,
-    FOREIGN KEY(vehicle_id) REFERENCES vehicles(id)
-);
-
-CREATE TABLE IF NOT EXISTS trim_powertrain_meta (
-    trim_id INTEGER PRIMARY KEY,
-    engine_code TEXT,
+    year INTEGER,
+    start_year INTEGER,
+    end_year INTEGER,
+    generation TEXT,
+    engine_type TEXT,
     fuel_type TEXT,
-    displacement_cc INTEGER,
+    is_facelift BOOLEAN DEFAULT 0,
+    market TEXT DEFAULT 'Global',
+    
+    -- Engine & Performance
     power_hp INTEGER,
+    power_kw INTEGER,
     torque_nm INTEGER,
+    displacement_cc INTEGER,
+    cylinders INTEGER,
+    cylinder_layout TEXT,
+    engine_code TEXT,
+    acceleration_0_100 REAL,
+    top_speed_kmh INTEGER,
+    
+    -- Consumption & Emissions
+    fuel_consumption_city REAL,
+    fuel_consumption_highway REAL,
+    fuel_consumption_combined REAL,
+    co2_emissions INTEGER,
+    emission_standard TEXT,
+    
+    -- Transmission & Drivetrain
     transmission_type TEXT,
     gears INTEGER,
-    drive TEXT,
-    market_scope TEXT,
-    FOREIGN KEY(trim_id) REFERENCES trims(id)
+    drivetrain TEXT,
+    
+    -- Dimensions & Weight
+    length_mm INTEGER,
+    width_mm INTEGER,
+    height_mm INTEGER,
+    wheelbase_mm INTEGER,
+    ground_clearance_mm INTEGER,
+    curb_weight_kg INTEGER,
+    gross_weight_kg INTEGER,
+    luggage_capacity_l INTEGER,
+    luggage_capacity_max_l INTEGER,
+    fuel_tank_capacity_l INTEGER,
+    
+    -- Wheels & Tires
+    tire_size_front TEXT,
+    tire_size_rear TEXT,
+    wheel_size_inches REAL,
+    
+    -- Additional
+    seating_capacity INTEGER DEFAULT 5,
+    doors INTEGER DEFAULT 5,
+    image_url TEXT,
+    msrp_price REAL,
+    currency TEXT DEFAULT 'USD',
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(generation_id) REFERENCES generations(id),
+    FOREIGN KEY(model_id) REFERENCES models(id)
 );
 
 CREATE TABLE IF NOT EXISTS specs (
@@ -45,23 +106,4 @@ CREATE TABLE IF NOT EXISTS specs (
     name TEXT NOT NULL,
     value TEXT NOT NULL,
     FOREIGN KEY(trim_id) REFERENCES trims(id)
-);
-
-CREATE TABLE IF NOT EXISTS source_documents (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    url TEXT UNIQUE NOT NULL,
-    title TEXT,
-    source_type TEXT NOT NULL,
-    market_scope TEXT,
-    retrieved_at TEXT
-);
-
-CREATE TABLE IF NOT EXISTS spec_sources (
-    spec_id INTEGER NOT NULL,
-    source_document_id INTEGER NOT NULL,
-    page TEXT,
-    note TEXT,
-    PRIMARY KEY(spec_id, source_document_id, page),
-    FOREIGN KEY(spec_id) REFERENCES specs(id),
-    FOREIGN KEY(source_document_id) REFERENCES source_documents(id)
 );

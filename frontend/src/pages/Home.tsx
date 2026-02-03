@@ -73,13 +73,34 @@ function Home() {
 
                         <div className="flex flex-wrap justify-center gap-4 pt-8">
                             {['Şanzıman', 'Motor', 'Performans', 'Boyutlar'].map((tag) => (
-                                <span key={tag} className="px-6 py-2.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-sm font-semibold hover:bg-white/20 transition-all cursor-default">
+                                <span key={tag} className="px-6 py-2.5 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 text-sm font-semibold hover:bg-white/10 transition-all cursor-default will-change-transform">
                                     {tag}
                                 </span>
                             ))}
                         </div>
                     </div>
                 </div>
+
+                {/* DSG Rehberi Floating Button - Left Side */}
+                <Link
+                    to="/guides/transmission/dsg"
+                    className="fixed left-6 top-1/3 z-40 group"
+                >
+                    <div className="flex items-center gap-3 pl-2 pr-4 py-2 bg-black/20 backdrop-blur-md rounded-full border border-white/10 hover:bg-white/5 transition-all duration-300 group-hover:scale-105">
+                        <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                        </div>
+                        <div className="hidden md:block">
+                            <span className="font-medium text-white text-sm">DSG Rehberi</span>
+                        </div>
+                        <svg className="w-4 h-4 text-white/50 group-hover:text-white group-hover:translate-x-0.5 transition-all hidden md:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                    </div>
+                </Link>
 
                 {/* Popular Models Section - At the bottom */}
                 <div className="w-full bg-gradient-to-t from-black via-black/80 to-transparent pt-32 pb-12 px-6 sm:px-8 lg:px-12">
@@ -130,12 +151,12 @@ function Home() {
                                     className="group relative overflow-hidden rounded-3xl bg-white/5 border border-white/10 hover:border-primary/50 hover:bg-white/10 transition-all duration-300"
                                 >
                                     {/* Image */}
-                                    <div className="aspect-[16/10] overflow-hidden">
+                                    <div className="aspect-video overflow-hidden bg-white/5">
                                         {trim.image_url ? (
                                             <img
                                                 src={trim.image_url}
                                                 alt={`${trim.model?.brand?.name} ${trim.name}`}
-                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                                className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-700"
                                                 onError={(e) => {
                                                     (e.target as HTMLImageElement).style.display = 'none';
                                                 }}
@@ -161,11 +182,11 @@ function Home() {
                                             {trim.model?.name} {trim.name}
                                         </h3>
                                         <div className="flex items-center gap-3 text-xs text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-75">
-                                            <span>{trim.power_hp} HP</span>
+                                            <span className="font-semibold">{trim.power_hp} HP</span>
                                             {trim.fuel_type && (
                                                 <>
                                                     <span className="w-1 h-1 rounded-full bg-gray-500" />
-                                                    <span>{trim.fuel_type}</span>
+                                                    <span className="font-medium text-gray-200">{trim.fuel_type}</span>
                                                 </>
                                             )}
                                         </div>

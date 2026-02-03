@@ -1,4 +1,4 @@
-import { FC, SVGProps } from 'react';
+import type { FC, SVGProps } from 'react';
 
 interface BrandIconProps extends SVGProps<SVGSVGElement> {
     brand: string;

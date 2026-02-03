@@ -209,3 +209,60 @@ func (h *TrimHandler) HandleGetFeaturedTrims(w http.ResponseWriter, r *http.Requ
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(trims)
 }
+
+// HandleListTrimsByGeneration handles GET /api/generations/{generationId}/trims
+func (h *TrimHandler) HandleListTrimsByGeneration(w http.ResponseWriter, r *http.Request) {
+	generationIDStr := r.PathValue("generationId")
+	generationID, err := strconv.ParseInt(generationIDStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid generation ID", http.StatusBadRequest)
+		return
+	}
+
+	trims, err := h.service.ListTrimsByGeneration(generationID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Format all trims for professional display
+	formatter.FormatTrims(trims)
+
+	// Create simplified response for trim selection
+	type TrimListDTO struct {
+		ID                 int64    `json:"id"`
+		Name               string   `json:"name"`
+		PowerHP            *int     `json:"power_hp,omitempty"`
+		TorqueNM           *int     `json:"torque_nm,omitempty"`
+		Acceleration0To100 *float64 `json:"acceleration_0_100,omitempty"`
+		FuelType           *string  `json:"fuel_type,omitempty"`
+		TransmissionType   *string  `json:"transmission_type,omitempty"`
+		TransmissionCode   *string  `json:"transmission_code,omitempty"`
+		Drivetrain         *string  `json:"drivetrain,omitempty"`
+		Year               int      `json:"year"`
+		StartYear          *int     `json:"start_year,omitempty"`
+		EndYear            *int     `json:"end_year,omitempty"`
+	}
+
+	var trimDTOs []TrimListDTO
+	for _, trim := range trims {
+		dto := TrimListDTO{
+			ID:                 trim.ID,
+			Name:               trim.Name,
+			PowerHP:            trim.PowerHP,
+			TorqueNM:           trim.TorqueNM,
+			Acceleration0To100: trim.Acceleration0To100,
+			FuelType:           trim.FuelType,
+			TransmissionType:   trim.TransmissionType,
+			TransmissionCode:   trim.TransmissionCode,
+			Drivetrain:         trim.Drivetrain,
+			Year:               trim.Year,
+			StartYear:          trim.StartYear,
+			EndYear:            trim.EndYear,
+		}
+		trimDTOs = append(trimDTOs, dto)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(trimDTOs)
+}

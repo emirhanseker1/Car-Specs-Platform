@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/emirh/car-specs/backend/internal/database"
 	"github.com/emirh/car-specs/backend/internal/handlers"
@@ -21,16 +22,19 @@ func main() {
 	// Initialize repositories
 	brandRepo := repository.NewBrandRepository(database.DB)
 	modelRepo := repository.NewModelRepository(database.DB)
+	generationRepo := repository.NewGenerationRepository(database.DB)
 	trimRepo := repository.NewTrimRepository(database.DB)
 
 	// Initialize services
 	brandService := service.NewBrandService(brandRepo)
 	modelService := service.NewModelService(modelRepo, brandRepo)
+	generationService := service.NewGenerationService(generationRepo, modelRepo)
 	trimService := service.NewTrimService(trimRepo, modelRepo)
 
 	// Initialize handlers
 	brandHandler := handlers.NewBrandHandler(brandService)
-	modelHandler := handlers.NewModelHandler(modelService)
+	modelHandler := handlers.NewModelHandler(modelService, trimService, brandService)
+	generationHandler := handlers.NewGenerationHandler(generationService)
 	trimHandler := handlers.NewTrimHandler(trimService)
 
 	// Setup routes
@@ -63,6 +67,8 @@ func main() {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	})
+	// IMPORTANT: More specific brand routes must come BEFORE generic {id} route
+	mux.HandleFunc("/api/brands/{brandId}/models", modelHandler.HandleListModelsByBrand)
 	mux.HandleFunc("/api/brands/{id}", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
@@ -96,7 +102,15 @@ func main() {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	})
-	mux.HandleFunc("/api/brands/{brandId}/models", modelHandler.HandleListModelsByBrand)
+
+	// Generation routes
+	mux.HandleFunc("GET /api/models/{modelId}/generations", generationHandler.HandleListByModel)
+	mux.HandleFunc("GET /api/generations/{generationId}", generationHandler.HandleGetGeneration)
+
+	// Legacy/Frontend aggregate route
+	mux.HandleFunc("/api/vehicles", modelHandler.HandleListVehicles)
+	// Vehicle Details (Aggregation)
+	mux.HandleFunc("GET /api/vehicles/{id}", modelHandler.HandleGetVehicleDetails)
 
 	// Trim routes
 	mux.HandleFunc("/api/trims", func(w http.ResponseWriter, r *http.Request) {
@@ -106,17 +120,10 @@ func main() {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	})
-	mux.HandleFunc("/api/trims/{id}", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
-			trimHandler.HandleGetTrim(w, r)
-		case http.MethodDelete:
-			trimHandler.HandleDeleteTrim(w, r)
-		default:
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
+	mux.HandleFunc("GET /api/trims/{id}", trimHandler.HandleGetTrim)
+	mux.HandleFunc("DELETE /api/trims/{id}", trimHandler.HandleDeleteTrim)
 	mux.HandleFunc("/api/models/{modelId}/trims", trimHandler.HandleListTrimsByModel)
+	mux.HandleFunc("GET /api/generations/{generationId}/trims", trimHandler.HandleListTrimsByGeneration)
 
 	// Search route
 	mux.HandleFunc("/api/search", trimHandler.HandleSearchTrims)
@@ -137,12 +144,19 @@ func main() {
 	}
 
 	log.Printf("🚀 Server starting on port %s", port)
-	log.Printf("📊 Database: %s", os.Getenv("DB_PATH"))
+	absDB, _ := filepath.Abs(os.Getenv("DB_PATH"))
+	if os.Getenv("DB_PATH") == "" {
+		absDB, _ = filepath.Abs("./vehicles.db")
+	}
+	log.Printf("📊 Database: %s", absDB)
 	log.Printf("🔗 API endpoints:")
 	log.Printf("   - GET    /api/brands")
 	log.Printf("   - POST   /api/brands")
 	log.Printf("   - GET    /api/brands/{id}")
 	log.Printf("   - GET    /api/brands/{brandId}/models")
+	log.Printf("   - GET    /api/models/{modelId}/generations")
+	log.Printf("   - GET    /api/generations/{generationId}")
+	log.Printf("   - GET    /api/generations/{generationId}/trims")
 	log.Printf("   - GET    /api/models/{modelId}/trims")
 	log.Printf("   - GET    /api/search")
 	log.Printf("   - GET    /health")

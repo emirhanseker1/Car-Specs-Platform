@@ -61,12 +61,12 @@ func (r *BrandRepository) GetByID(id int64) (*models.Brand, error) {
 	return brand, nil
 }
 
-// GetByName retrieves a brand by name
+// GetByName retrieves a brand by name (case-insensitive)
 func (r *BrandRepository) GetByName(name string) (*models.Brand, error) {
 	query := `
 		SELECT id, name, country, logo_url, created_at, updated_at
 		FROM brands
-		WHERE name = ?
+		WHERE LOWER(name) = LOWER(?)
 	`
 	brand := &models.Brand{}
 	err := r.db.QueryRow(query, name).Scan(

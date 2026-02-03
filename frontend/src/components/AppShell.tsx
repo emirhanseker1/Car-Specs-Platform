@@ -7,8 +7,12 @@ export default function AppShell() {
   const location = useLocation();
 
   // Pages that share the full-screen immersive background
-  const transparentLayoutRoutes = ['/', '/search', '/guides', '/compare', '/about'];
-  const isTransparentLayout = transparentLayoutRoutes.includes(location.pathname);
+  const transparentLayoutRoutes = ['/', '/search', '/guides', '/guides/transmission', '/guides/engine', '/compare', '/about'];
+  const isTransparentLayout = transparentLayoutRoutes.includes(location.pathname) ||
+    location.pathname.startsWith('/brand/') ||
+    location.pathname.startsWith('/models/') ||
+    location.pathname.startsWith('/generations/') ||
+    location.pathname.startsWith('/trims/');
 
 
   return (
@@ -19,7 +23,7 @@ export default function AppShell() {
 
       {/* Persistent Header */}
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isTransparentLayout
+        className={`${isTransparentLayout ? 'absolute' : 'fixed'} top-0 left-0 right-0 z-50 transition-all duration-300 ${isTransparentLayout
           ? 'bg-transparent py-6'
           : 'bg-slate-950/80 backdrop-blur-md py-4 border-b border-white/5 shadow-lg shadow-black/5'
           }`}

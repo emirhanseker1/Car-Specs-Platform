@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, Info, Zap, Settings, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Info, Zap, Settings, TrendingUp, CheckCircle2, XCircle, CarFront } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface TransmissionSection {
@@ -49,7 +49,7 @@ const TRANSMISSION_TYPES: TransmissionSection[] = [
     },
     {
         id: 'automatic',
-        title: 'Otomatik Şanzıman (Tork Konvertörlü)',
+        title: 'Otomatik Şanzıman',
         icon: Zap,
         description: 'Hidrolik tork konvertörü ve planetary gear setleri kullanarak otomatik vites değişimi sağlayan sistem.',
         mechanism: 'Tork konvertörü, motor ile şanzıman arasında hidrolik bir bağlantı oluşturur. İçindeki özel sıvı, motorun gücünü tekerleklere aktarır. Planetary gear setleri ve hidrolik valf gövdesi, farklı vites oranlarını otomatik olarak seçer.',
@@ -58,7 +58,7 @@ const TRANSMISSION_TYPES: TransmissionSection[] = [
             'Yumuşak ve kesintisiz vites geçişleri',
             'Trafikte rahat kullanım',
             'Geniş model yelpazesinde bulunabilirlik',
-            'Modern versiyonlarda yüksek verimlilik (8-10 ileri)'
+            'Modern versiyonlarda yüksek verimlilik'
         ],
         cons: [
             'Manuel kadar doğrudan kontrol hissi yok',
@@ -79,7 +79,7 @@ const TRANSMISSION_TYPES: TransmissionSection[] = [
     },
     {
         id: 'dct',
-        title: 'Çift Kavramalı Şanzıman (DCT/DSG)',
+        title: 'Çift Kavramalı (DCT)',
         icon: TrendingUp,
         description: 'İki ayrı kavrama ve vites seti kullanarak yıldırım hızında vites değişimi sunan modern sistem.',
         mechanism: 'DCT, iki ayrı manuel şanzımanın iç içe geçmiş halidir. Bir kavrama tek vitesleri (1,3,5,7), diğeri çift vitesleri (2,4,6) kontrol eder. Bir sonraki vites önceden hazırlandığı için geçiş milisaniyeler sürer. Mekatronik ünite tüm işlemleri elektronik olarak yönetir.',
@@ -95,7 +95,7 @@ const TRANSMISSION_TYPES: TransmissionSection[] = [
             'Isınma problemleri (özellikle kuru kavramalı)',
             'Bakım ve onarım maliyeti yüksek',
             'Mekatronik arızaları pahalı',
-            'Öğrenme eğrisi gerektirir (sürüş tarzı)'
+            'Öğrenme eğrisi gerektirir'
         ],
         examples: [
             'Volkswagen DSG (6/7 İleri)',
@@ -110,7 +110,7 @@ const TRANSMISSION_TYPES: TransmissionSection[] = [
     },
     {
         id: 'cvt',
-        title: 'CVT (Sürekli Değişken Şanzıman)',
+        title: 'CVT (Değişken)',
         icon: Info,
         description: 'Kasnak ve kayış sistemi ile sonsuz vites oranı sunan, yakıt ekonomisine odaklanan teknoloji.',
         mechanism: 'CVT, sabit dişliler yerine değişken çaplı iki kasnak ve bunları birbirine bağlayan çelik kayış kullanır. Kasnakların çapı hidrolik olarak değiştirildiğinde, vites oranı sürekli ve kademesiz olarak ayarlanır. Bu sayede motor her zaman en verimli devirde çalışır.',
@@ -145,304 +145,333 @@ export default function TransmissionGuide() {
     const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
     return (
-        <div className="min-h-screen bg-background">
-            {/* Hero Section */}
-            <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-background border-b border-border">
-                <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
-                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-                    <Link
-                        to="/guides"
-                        className="inline-flex items-center gap-2 text-sm text-text-muted hover:text-primary transition-colors mb-8"
-                    >
-                        <ArrowLeft className="w-4 h-4" />
-                        Rehberlere Dön
-                    </Link>
+        <div className="relative min-h-screen font-sans text-slate-200">
+            {/* Background Image & Overlay */}
+            <div className="fixed inset-0 z-0">
+                <div
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{ backgroundImage: 'url(/hero-2.jpg)' }}
+                />
+                <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-sm" />
+            </div>
 
-                    <div className="max-w-3xl">
-                        <h1 className="text-4xl sm:text-5xl font-bold text-text-main mb-6">
-                            Şanzıman Dünyası
-                        </h1>
-                        <p className="text-lg text-text-muted leading-relaxed mb-8">
-                            Otomobilinizin kalbinden tekerleklerine gücü ileten kritik sistem: Şanzıman.
-                            Manuel'den CVT'ye, her sistemin nasıl çalıştığını, avantajlarını ve dezavantajlarını keşfedin.
-                        </p>
-                        <div className="flex flex-wrap gap-4 text-sm">
-                            <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-border">
-                                <Settings className="w-4 h-4 text-primary" />
-                                <span className="text-text-main font-medium">4 Ana Tip</span>
-                            </div>
-                            <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-border">
-                                <Zap className="w-4 h-4 text-primary" />
-                                <span className="text-text-main font-medium">Detaylı Mekanizma</span>
-                            </div>
-                            <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-border">
-                                <TrendingUp className="w-4 h-4 text-primary" />
-                                <span className="text-text-main font-medium">Örnek Modeller</span>
+            <div className="relative z-10">
+                                    
+                {/* Hero Section */}
+                <div className="relative border-b border-white/10 bg-black/20 backdrop-blur-sm">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 pt-32">
+                        <Link
+                            to="/guides"
+                            className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors mb-8 bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full w-fit border border-white/5"
+                        >
+                            <ArrowLeft className="w-4 h-4" />
+                            Rehberlere Dön
+                        </Link>
+
+                        <div className="max-w-3xl">
+                            <h1 className="text-lg sm:text-6xl font-black text-white mb-6 drop-shadow-2xl">
+                                Şanzıman Dünyası
+                            </h1>
+                            <p className="text-lg text-slate-300 leading-relaxed mb-8 font-light">
+                                Otomobilinizin kalbinden tekerleklerine gücü ileten kritik sistem: Şanzıman.
+                                Manuel'den CVT'ye, her sistemin nasıl çalıştığını, avantajlarını ve dezavantajlarını keşfedin.
+                            </p>
+                            <div className="flex flex-wrap gap-3 text-sm">
+                                <div className="flex items-center gap-2 bg-[#1e293b]/80 backdrop-blur px-4 py-2 rounded-xl border border-white/10 text-white">
+                                    <Settings className="w-4 h-4 text-primary" />
+                                    <span className="font-medium">4 Ana Tip</span>
+                                </div>
+                                <div className="flex items-center gap-2 bg-[#1e293b]/80 backdrop-blur px-4 py-2 rounded-xl border border-white/10 text-white">
+                                    <Zap className="w-4 h-4 text-primary" />
+                                    <span className="font-medium">Detaylı Mekanizma</span>
+                                </div>
+                                <div className="flex items-center gap-2 bg-[#1e293b]/80 backdrop-blur px-4 py-2 rounded-xl border border-white/10 text-white">
+                                    <TrendingUp className="w-4 h-4 text-primary" />
+                                    <span className="font-medium">Örnek Modeller</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Main Content */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                {/* Introduction */}
-                <div className="bg-white rounded-3xl p-8 border border-border shadow-sm mb-12">
-                    <h2 className="text-2xl font-bold text-text-main mb-4">Şanzıman Nedir?</h2>
-                    <div className="prose prose-slate max-w-none">
-                        <p className="text-text-muted leading-relaxed mb-4">
-                            Şanzıman (transmisyon), motorun ürettiği gücü ve torku tekerleklere ileten, aynı zamanda
-                            farklı hız ve yük koşullarına göre optimize eden mekanik bir sistemdir. Motorlar genellikle
-                            belirli bir devir aralığında en verimli çalışır; şanzıman bu devir aralığını koruyarak
-                            aracın farklı hızlarda hareket etmesini sağlar.
-                        </p>
-                        <p className="text-text-muted leading-relaxed">
-                            Farklı vites oranları sayesinde, düşük hızlarda yüksek tork (çekiş gücü) ve yüksek hızlarda
-                            düşük motor devri (yakıt ekonomisi) elde edilir. Modern otomobillerde manuel, otomatik,
-                            çift kavramalı (DCT) ve sürekli değişken (CVT) olmak üzere dört ana şanzıman tipi bulunur.
-                        </p>
+                {/* Main Content */}
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                    {/* Introduction */}
+                    <div className="bg-[#1e293b]/60 backdrop-blur-md rounded-2xl p-5 border border-white/10 shadow-lg mb-12">
+                        <h2 className="text-lg font-bold text-white mb-4">Şanzıman Nedir?</h2>
+                        <div className="prose prose-invert max-w-none text-slate-300">
+                            <p className="leading-relaxed mb-4">
+                                Şanzıman (transmisyon), motorun ürettiği gücü ve torku tekerleklere ileten, aynı zamanda
+                                farklı hız ve yük koşullarına göre optimize eden mekanik bir sistemdir. Motorlar genellikle
+                                belirli bir devir aralığında en verimli çalışır; şanzıman bu devir aralığını koruyarak
+                                aracın farklı hızlarda hareket etmesini sağlar.
+                            </p>
+                            <p className="leading-relaxed">
+                                Farklı vites oranları sayesinde, düşük hızlarda yüksek tork (çekiş gücü) ve yüksek hızlarda
+                                düşük motor devri (yakıt ekonomisi) elde edilir. Modern otomobillerde manuel, otomatik,
+                                çift kavramalı (DCT) ve sürekli değişken (CVT) olmak üzere dört ana şanzıman tipi bulunur.
+                            </p>
+                        </div>
                     </div>
-                </div>
 
-                {/* Transmission Types Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                    {TRANSMISSION_TYPES.map((transmission, index) => {
+
+
+                    {/* Transmission Types Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                        {TRANSMISSION_TYPES.map((transmission, index) => {
+                            const Icon = transmission.icon;
+
+                            return (
+                                <div
+                                    key={transmission.id}
+                                    onClick={() => setExpandedSection(transmission.id)}
+                                    className={`group cursor-pointer rounded-2xl bg-gradient-to-br ${transmission.color} p-5 text-white shadow-xl border border-white/10 hover:border-white/30 hover:scale-105 transition-all duration-300 relative overflow-hidden`}
+                                >
+                                    <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors"></div>
+
+                                    <div className="relative z-10">
+                                    
+                                        <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-sm mb-4 border border-white/10">
+                                            <Icon className="w-7 h-7" />
+                                        </div>
+
+                                        <div className="text-xs font-bold uppercase tracking-wider opacity-70 mb-2">Tip {index + 1}</div>
+                                        <h3 className="text-lg font-bold mb-3 leading-tight">{transmission.title}</h3>
+                                        <p className="text-white/80 text-sm leading-relaxed mb-4">{transmission.description}</p>
+
+                                        {/* DSG Guide Button for DCT */}
+                                        {transmission.id === 'dct' && (
+                                            <Link
+                                                to="/guides/transmission/dsg"
+                                                onClick={(e) => e.stopPropagation()}
+                                                className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-4 py-2 rounded-lg border border-white/10 mb-4 transition-all w-full justify-center group/btn"
+                                            >
+                                                <Settings className="w-3.5 h-3.5 group-hover/btn:rotate-90 transition-transform" />
+                                                VAG DSG Rehberi
+                                            </Link>
+                                        )}
+
+                                        <div className="flex items-center text-sm font-semibold mt-auto">
+                                            Detayları Gör
+                                            <svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Detail Modal */}
+                    {expandedSection && (() => {
+                        const transmission = TRANSMISSION_TYPES.find(t => t.id === expandedSection);
+                        if (!transmission) return null;
                         const Icon = transmission.icon;
 
                         return (
-                            <div
-                                key={transmission.id}
-                                onClick={() => setExpandedSection(transmission.id)}
-                                className={`group cursor-pointer rounded-3xl bg-gradient-to-br ${transmission.color} p-6 text-white hover:shadow-2xl hover:scale-105 transition-all duration-300 relative overflow-hidden`}
-                            >
-                                <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <div className="fixed inset-0 z-[9999] bg-[#0f172a] overflow-y-auto animate-in fade-in zoom-in-95 duration-300">
+                                {/* Sticky Header */}
+                                <div className="sticky top-0 z-[100] bg-[#0f172a]/90 backdrop-blur-xl border-b border-white/5 shadow-2xl">
+                                    <div className="max-w-[1920px] mx-auto px-5 py-3 flex items-center justify-between">
+                                        <div className="flex items-center gap-4">
+                                            <div className={`w-12 h-10 rounded-lg flex items-center justify-center bg-gradient-to-br ${transmission.color} shadow-lg ring-1 ring-white/10`}>
+                                                <Icon className="w-4 h-4 text-white" />
+                                            </div>
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <h3 className="text-lg font-bold text-white leading-tight">{transmission.title}</h3>
+                                                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-800/50 px-2 py-0.5 rounded-md border border-slate-700">Teknik İnceleme</span>
+                                                </div>
+                                                <div className="text-xs font-medium text-slate-400 hidden sm:block">Detaylı mekanizma ve özellikler</div>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => setExpandedSection(null)}
+                                            className="group flex items-center gap-2 bg-white/5 hover:bg-white/10 px-5 py-2.5 rounded-lg border border-white/10 transition-all hover:border-white/20 active:scale-95"
+                                        >
+                                            <span className="text-sm font-bold text-slate-300 group-hover:text-white">KAPAT</span>
+                                            <div className="bg-white/10 rounded-full p-0.5 group-hover:bg-white/20 transition-colors">
+                                                <XCircle className="w-4 h-4 text-slate-300 group-hover:text-white" />
+                                            </div>
+                                        </button>
+                                    </div>
+                                </div>
 
-                                <div className="relative z-10">
-                                    <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm mb-4">
-                                        <Icon className="w-7 h-7" />
+                                {/* Dashboard Content */}
+                                <div className="max-w-[1920px] mx-auto px-5 py-8 md:py-12">
+                                    <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 md:gap-10 items-start">
+                                        
+                                        {/* LEFT COLUMN (7/12) */}
+                                        <div className="xl:col-span-9 space-y-8">
+                                            {/* Hero Description */}
+                                            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-[#0B1120] border border-white/5 p-5 md:p-5 shadow-2xl">
+                                                <div className={`absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br ${transmission.color} opacity-[0.1] blur-[100px] rounded-full pointer-events-none -translate-y-1/2 translate-x-1/4`} />
+                                                <h2 className="relative text-lg md:text-lg font-black text-white mb-6 leading-tight tracking-tight">
+                                                    {transmission.title} <span className="text-slate-500">Nedir?</span>
+                                                </h2>
+                                                <p className="relative text-base md:text-lg text-slate-300 leading-relaxed font-light max-w-4xl">
+                                                    {transmission.description}
+                                                </p>
+                                            </div>
+
+                                            {/* Mechanism Card */}
+                                            <div className="bg-blue-900/5 border border-blue-500/10 rounded-2xl p-5 md:p-10 relative overflow-hidden group">
+                                                <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 blur-[120px] rounded-full pointer-events-none group-hover:bg-blue-500/15 transition-all duration-700" />
+                                                <h4 className="relative text-lg font-bold text-blue-100 mb-6 flex items-center gap-3">
+                                                    <div className="bg-blue-500/20 p-2.5 rounded-lg ring-1 ring-blue-500/30">
+                                                        <Settings className="w-4 h-4 text-blue-400" />
+                                                    </div>
+                                                    Çalışma Mekanizması
+                                                </h4>
+                                                <p className="relative text-blue-100/80 leading-relaxed text-base md:text-lg font-light">
+                                                    {transmission.mechanism}
+                                                </p>
+                                            </div>
+
+                                            {/* Visuals Grid */}
+                                            <div className="space-y-6">
+                                                {/* Video */}
+                                                {transmission.videoUrl && (
+                                                    <div className="space-y-4">
+                                                        <h4 className="text-base font-bold text-slate-200 flex items-center gap-3 px-2">
+                                                            <Info className="w-4 h-4 text-amber-400" />
+                                                            Nasıl Çalışır?
+                                                        </h4>
+                                                        <div className="rounded-2xl overflow-hidden border border-white/10 bg-black shadow-2xl ring-1 ring-white/5 group">
+                                                            <div className="relative aspect-video">
+                                                                <iframe
+                                                                    className="absolute top-0 left-0 w-full h-full opacity-90 group-hover:opacity-100 transition-opacity"
+                                                                    src={transmission.videoUrl}
+                                                                    title="Video"
+                                                                    frameBorder="0"
+                                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                                    allowFullScreen
+                                                                ></iframe>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Image */}
+                                                
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* RIGHT COLUMN (5/12) */}
+                                        <div className="xl:col-span-3 space-y-8 sticky top-32">
+                                            
+                                            {/* Pros & Cons */}
+                                            <div className="grid gap-5">
+                                                {/* Advantages */}
+                                                <div className="bg-emerald-950/20 border border-emerald-500/10 rounded-2xl p-5">
+                                                    <h4 className="text-lg font-bold text-emerald-400 mb-6 flex items-center gap-3">
+                                                        <div className="bg-emerald-500/10 p-2 rounded-lg ring-1 ring-emerald-500/20">
+                                                           <CheckCircle2 className="w-4 h-4" />
+                                                        </div>
+                                                        Avantajlar
+                                                    </h4>
+                                                    <div className="grid gap-3">
+                                                        {transmission.pros.map((pro, idx) => (
+                                                            <div key={idx} className="bg-emerald-500/5 border border-emerald-500/10 rounded-lg p-4 flex items-start gap-4 hover:bg-emerald-500/10 transition-colors">
+                                                                <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                                                                <span className="text-emerald-100/90 font-medium">{pro}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                {/* Disadvantages */}
+                                                <div className="bg-rose-950/10 border border-rose-500/10 rounded-2xl p-5">
+                                                    <h4 className="text-lg font-bold text-rose-400 mb-6 flex items-center gap-3">
+                                                        <div className="bg-rose-500/10 p-2 rounded-lg ring-1 ring-rose-500/20">
+                                                           <XCircle className="w-4 h-4" />
+                                                        </div>
+                                                        Dezavantajlar
+                                                    </h4>
+                                                    <div className="grid gap-3">
+                                                        {transmission.cons.map((con, idx) => (
+                                                            <div key={idx} className="bg-rose-500/5 border border-rose-500/10 rounded-lg p-4 flex items-start gap-4 hover:bg-rose-500/10 transition-colors">
+                                                                <XCircle className="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" />
+                                                                <span className="text-rose-100/90 font-medium">{con}</span>
+                                                            </div>
+                                                        ))}
+                                        </div>
                                     </div>
 
-                                    <div className="text-xs font-medium opacity-90 mb-2">Tip {index + 1}</div>
-                                    <h3 className="text-xl font-bold mb-3 leading-tight">{transmission.title}</h3>
-                                    <p className="text-white/90 text-sm leading-relaxed mb-4">{transmission.description}</p>
+                                            {/* Examples */}
+                                            <div className="bg-slate-900/50 border border-white/5 rounded-2xl p-5">
+                                                <h4 className="text-lg font-bold text-indigo-300 mb-6 flex items-center gap-3">
+                                                    <div className="bg-indigo-500/10 p-2 rounded-lg ring-1 ring-indigo-500/20">
+                                                        <CarFront className="w-4 h-4 text-indigo-400" />
+                                                    </div>
+                                                    Popüler Örnekler
+                                                </h4>
+                                                <div className="flex flex-wrap gap-3">
+                                                    {transmission.examples.map((example, idx) => (
+                                                        <div
+                                                            key={idx}
+                                                            className="bg-slate-800/50 hover:bg-indigo-600/20 border border-white/5 hover:border-indigo-500/30 rounded-full px-5 py-3 text-sm text-slate-300 hover:text-white font-medium transition-all cursor-default"
+                                                        >
+                                                            {example}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
 
-                                    <div className="flex items-center text-sm font-semibold">
-                                        Detayları Gör
-                                        <svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                        </svg>
+                                        </div>
+
                                     </div>
                                 </div>
                             </div>
                         );
-                    })}
-                </div>
+                    })()}
 
-                {/* Detail Modal */}
-                {expandedSection && (() => {
-                    const transmission = TRANSMISSION_TYPES.find(t => t.id === expandedSection);
-                    if (!transmission) return null;
-                    const Icon = transmission.icon;
+{/* Comparison Section */}
+                    <div className="mt-12 bg-[#1e293b]/60 backdrop-blur-md rounded-2xl p-5 border border-white/10 shadow-lg">
+                        <h2 className="text-lg font-bold text-white mb-6">Karşılaştırma ve Seçim Rehberi</h2>
 
-                    return (
-                        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                            <div className="bg-white rounded-3xl max-w-5xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-                                {/* Header */}
-                                <div className={`bg-gradient-to-r ${transmission.color} p-8 text-white sticky top-0 z-10`}>
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex items-start gap-4">
-                                            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-                                                <Icon className="w-6 h-6" />
-                                            </div>
-                                            <div>
-                                                <div className="text-sm font-medium opacity-90 mb-1">Detaylı İnceleme</div>
-                                                <h3 className="text-2xl font-bold mb-2">{transmission.title}</h3>
-                                                <p className="text-white/90 text-sm max-w-2xl">{transmission.description}</p>
-                                            </div>
-                                        </div>
-                                        <button
-                                            onClick={() => setExpandedSection(null)}
-                                            className="text-white/80 hover:text-white transition-colors p-2 hover:bg-white/10 rounded-xl"
-                                        >
-                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                            </svg>
-                                        </button>
+                        <div className="rounded-2xl overflow-hidden border border-white/10 mb-8 bg-black/40">
+                            <img
+                                src="/images/guides/transmission_comparison_1769183038027.png"
+                                alt="Şanzıman Karşılaştırması"
+                                className="w-full h-auto opacity-90"
+                            />
+                        </div>
+
+                        <div className="space-y-6">
+                            <div>
+                                <h3 className="text-lg font-semibold text-white mb-4">Hangi Kullanım İçin Hangi Şanzıman?</h3>
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    <div className="bg-blue-500/10 rounded-xl p-4 border border-blue-500/20">
+                                        <div className="font-bold text-blue-400 mb-2">🏙️ Şehir İçi Kullanım</div>
+                                        <div className="text-sm text-blue-200">Otomatik veya CVT - Konfor ve yakıt ekonomisi</div>
                                     </div>
-                                </div>
-
-                                {/* Content */}
-                                <div className="p-8 space-y-8">
-                                    {/* Mechanism */}
-                                    <div>
-                                        <h4 className="text-lg font-semibold text-text-main mb-3 flex items-center gap-2">
-                                            <Settings className="w-5 h-5 text-primary" />
-                                            Çalışma Mekanizması
-                                        </h4>
-                                        <p className="text-text-muted leading-relaxed">
-                                            {transmission.mechanism}
-                                        </p>
+                                    <div className="bg-purple-500/10 rounded-xl p-4 border border-purple-500/20">
+                                        <div className="font-bold text-purple-400 mb-2">🏁 Sportif Sürüş</div>
+                                        <div className="text-sm text-purple-200">DCT veya Manuel - Hız ve kontrol</div>
                                     </div>
-
-                                    {/* Pros & Cons */}
-                                    <div className="grid md:grid-cols-2 gap-6">
-                                        {/* Pros */}
-                                        <div className="bg-green-50 rounded-2xl p-6 border border-green-200">
-                                            <h4 className="text-lg font-semibold text-green-900 mb-4 flex items-center gap-2">
-                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                                </svg>
-                                                Avantajlar
-                                            </h4>
-                                            <ul className="space-y-2">
-                                                {transmission.pros.map((pro, idx) => (
-                                                    <li key={idx} className="text-sm text-green-800 flex items-start gap-2">
-                                                        <span className="text-green-600 mt-0.5">✓</span>
-                                                        <span>{pro}</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-
-                                        {/* Cons */}
-                                        <div className="bg-red-50 rounded-2xl p-6 border border-red-200">
-                                            <h4 className="text-lg font-semibold text-red-900 mb-4 flex items-center gap-2">
-                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                                </svg>
-                                                Dezavantajlar
-                                            </h4>
-                                            <ul className="space-y-2">
-                                                {transmission.cons.map((con, idx) => (
-                                                    <li key={idx} className="text-sm text-red-800 flex items-start gap-2">
-                                                        <span className="text-red-600 mt-0.5">✗</span>
-                                                        <span>{con}</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
+                                    <div className="bg-green-500/10 rounded-xl p-4 border border-green-500/20">
+                                        <div className="font-bold text-green-400 mb-2">🛣️ Uzun Yol</div>
+                                        <div className="text-sm text-green-200">Otomatik (8+ ileri) - Konfor ve verimlilik</div>
                                     </div>
-
-                                    {/* Video */}
-                                    {transmission.videoUrl && (
-                                        <div>
-                                            <h4 className="text-lg font-semibold text-text-main mb-3 flex items-center gap-2">
-                                                <svg className="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
-                                                </svg>
-                                                Açıklama Videosu
-                                            </h4>
-                                            <div className="rounded-2xl overflow-hidden border border-border bg-slate-50">
-                                                <div className="relative" style={{ paddingBottom: '56.25%' }}>
-                                                    <iframe
-                                                        className="absolute top-0 left-0 w-full h-full"
-                                                        src={transmission.videoUrl}
-                                                        title={`${transmission.title} - Açıklama Videosu`}
-                                                        frameBorder="0"
-                                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                                        allowFullScreen
-                                                    ></iframe>
-                                                </div>
-                                            </div>
-                                            <p className="text-xs text-text-muted mt-2">
-                                                📺 Anlatan Adamlar kanalı tarafından hazırlanmıştır
-                                            </p>
-                                        </div>
-                                    )}
-
-                                    {/* Image */}
-                                    <div>
-                                        <h4 className="text-lg font-semibold text-text-main mb-3 flex items-center gap-2">
-                                            <svg className="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-                                            </svg>
-                                            Teknik Görsel
-                                        </h4>
-                                        <div className="rounded-2xl overflow-hidden border border-border bg-slate-50">
-                                            <img
-                                                src={transmission.image}
-                                                alt={transmission.title}
-                                                className="w-full h-auto"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Examples */}
-                                    <div>
-                                        <h4 className="text-lg font-semibold text-text-main mb-4 flex items-center gap-2">
-                                            <TrendingUp className="w-5 h-5 text-primary" />
-                                            Popüler Örnekler
-                                        </h4>
-                                        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                                            {transmission.examples.map((example, idx) => (
-                                                <div
-                                                    key={idx}
-                                                    className="bg-slate-50 rounded-xl px-4 py-3 border border-slate-200 text-sm text-text-main font-medium"
-                                                >
-                                                    {example}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Close Button */}
-                                    <div className="flex justify-center pt-4">
-                                        <button
-                                            onClick={() => setExpandedSection(null)}
-                                            className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-text-main font-semibold rounded-xl transition-colors"
-                                        >
-                                            Kapat
-                                        </button>
+                                    <div className="bg-orange-500/10 rounded-xl p-4 border border-orange-500/20">
+                                        <div className="font-bold text-orange-400 mb-2">💰 Düşük Maliyet</div>
+                                        <div className="text-sm text-orange-200">Manuel - Bakım ve yakıt tasarrufu</div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    );
-                })()}
 
-                {/* Comparison Section */}
-                <div className="mt-12 bg-white rounded-3xl p-8 border border-border shadow-sm">
-                    <h2 className="text-2xl font-bold text-text-main mb-6">Karşılaştırma ve Seçim Rehberi</h2>
-
-                    <div className="rounded-2xl overflow-hidden border border-border mb-6">
-                        <img
-                            src="/images/guides/transmission_comparison_1769183038027.png"
-                            alt="Şanzıman Karşılaştırması"
-                            className="w-full h-auto"
-                        />
-                    </div>
-
-                    <div className="space-y-6">
-                        <div>
-                            <h3 className="text-lg font-semibold text-text-main mb-3">Hangi Kullanım İçin Hangi Şanzıman?</h3>
-                            <div className="grid md:grid-cols-2 gap-4">
-                                <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
-                                    <div className="font-semibold text-blue-900 mb-2">🏙️ Şehir İçi Kullanım</div>
-                                    <div className="text-sm text-blue-800">Otomatik veya CVT - Konfor ve yakıt ekonomisi</div>
-                                </div>
-                                <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
-                                    <div className="font-semibold text-purple-900 mb-2">🏁 Sportif Sürüş</div>
-                                    <div className="text-sm text-purple-800">DCT veya Manuel - Hız ve kontrol</div>
-                                </div>
-                                <div className="bg-green-50 rounded-xl p-4 border border-green-200">
-                                    <div className="font-semibold text-green-900 mb-2">🛣️ Uzun Yol</div>
-                                    <div className="text-sm text-green-800">Otomatik (8+ ileri) - Konfor ve verimlilik</div>
-                                </div>
-                                <div className="bg-orange-50 rounded-xl p-4 border border-orange-200">
-                                    <div className="font-semibold text-orange-900 mb-2">💰 Düşük Maliyet</div>
-                                    <div className="text-sm text-orange-800">Manuel - Bakım ve yakıt tasarrufu</div>
-                                </div>
+                            <div className="bg-white/5 rounded-xl p-5 border border-white/10">
+                                <h4 className="font-bold text-white mb-3">💡 Uzman Tavsiyesi</h4>
+                                <p className="text-sm text-slate-400 leading-relaxed">
+                                    Şanzıman seçimi tamamen kullanım amacınıza bağlıdır. Yoğun şehir trafiğinde her gün
+                                    kullanacaksanız otomatik veya CVT konforlu olacaktır. Sportif sürüş ve performans
+                                    arıyorsanız DCT veya manuel tercih edilebilir. Modern otomatik şanzımanlar (8-10 ileri)
+                                    artık yakıt ekonomisinde de manuel kadar verimli olabilmektedir.
+                                </p>
                             </div>
-                        </div>
-
-                        <div className="bg-slate-50 rounded-xl p-6 border border-slate-200">
-                            <h4 className="font-semibold text-text-main mb-3">💡 Uzman Tavsiyesi</h4>
-                            <p className="text-sm text-text-muted leading-relaxed">
-                                Şanzıman seçimi tamamen kullanım amacınıza bağlıdır. Yoğun şehir trafiğinde her gün
-                                kullanacaksanız otomatik veya CVT konforlu olacaktır. Sportif sürüş ve performans
-                                arıyorsanız DCT veya manuel tercih edilebilir. Modern otomatik şanzımanlar (8-10 ileri)
-                                artık yakıt ekonomisinde de manuel kadar verimli olabilmektedir.
-                            </p>
                         </div>
                     </div>
                 </div>

@@ -23,6 +23,7 @@ type Model struct {
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 
 	// Relationships (populated via joins)
+	// Relationships (populated via joins)
 	Brand *Brand `db:"-" json:"brand,omitempty"`
 }
 
@@ -35,6 +36,8 @@ type Trim struct {
 	// Identification
 	Name       string  `db:"name" json:"name"`
 	Year       int     `db:"year" json:"year"`
+	StartYear  *int    `db:"start_year" json:"start_year,omitempty"`
+	EndYear    *int    `db:"end_year" json:"end_year,omitempty"`
 	Generation *string `db:"generation" json:"generation,omitempty"` // Kept for backwards compatibility
 	IsFacelift bool    `db:"is_facelift" json:"is_facelift"`
 	Market     string  `db:"market" json:"market"`
@@ -61,6 +64,7 @@ type Trim struct {
 
 	// Transmission & Drivetrain
 	TransmissionType *string `db:"transmission_type" json:"transmission_type,omitempty"`
+	TransmissionCode *string `db:"transmission_code" json:"transmission_code,omitempty"`
 	Gears            *int    `db:"gears" json:"gears,omitempty"`
 	Drivetrain       *string `db:"drivetrain" json:"drivetrain,omitempty"`
 
@@ -94,18 +98,42 @@ type Trim struct {
 	// Relationships
 	GenerationObj *Generation `db:"-" json:"generation_obj,omitempty"` // Changed from Model
 	Model         *Model      `db:"-" json:"model,omitempty"`          // Kept via Generation
+	Specs         []Spec      `db:"-" json:"specs,omitempty"`
+}
+
+// Spec represents a Key-Value specification
+type Spec struct {
+	ID       int64  `db:"id" json:"id"`
+	TrimID   int64  `db:"trim_id" json:"trim_id"`
+	Category string `db:"category" json:"category"`
+	Name     string `db:"name" json:"name"`
+	Value    string `db:"value" json:"value"`
 }
 
 // Feature represents a car feature (safety, comfort, tech)
 type Feature struct {
-	ID       int64   `db:"id" json:"id"`
-	Name     string  `db:"name" json:"name"`
-	Category *string `db:"category" json:"category,omitempty"`
+	ID       int64  `db:"id" json:"id"`
+	TrimID   int64  `db:"trim_id" json:"trim_id"`
+	Category string `db:"category" json:"category"` // e.g., "Safety", "Comfort"
+	Name     string `db:"name" json:"name"`
+	Value    string `db:"value" json:"value"` // "Standard", "Optional", or description
 }
 
-// TrimFeature represents the many-to-many relationship
-type TrimFeature struct {
-	TrimID     int64 `db:"trim_id" json:"trim_id"`
-	FeatureID  int64 `db:"feature_id" json:"feature_id"`
-	IsStandard bool  `db:"is_standard" json:"is_standard"`
+// VehicleListItem represents the aggregated view for lists (Frontend compatibility)
+type VehicleListItem struct {
+	ID             int64           `json:"id"`
+	ModelID        int64           `json:"model_id"` // Added for navigation
+	Brand          string          `json:"brand"`
+	Model          string          `json:"model"`
+	Generation     string          `json:"generation"`
+	ImageURL       string          `json:"image_url"`
+	GenerationMeta *GenerationMeta `json:"generation_meta,omitempty"`
+	EngineOptions  []string        `json:"engine_options,omitempty"`
+}
+
+type GenerationMeta struct {
+	StartYear  *int    `json:"start_year,omitempty"`
+	EndYear    *int    `json:"end_year,omitempty"`
+	IsFacelift *bool   `json:"is_facelift,omitempty"`
+	Market     *string `json:"market,omitempty"`
 }

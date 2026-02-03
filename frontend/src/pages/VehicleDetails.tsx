@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
     ArrowLeft,
     Timer,
@@ -67,75 +67,92 @@ const getSpecPercentage = (name: string, valueStr: string): number => {
 
 function VehicleDetails() {
     const navigate = useNavigate();
-    const { id } = useParams();
-    const [searchParams] = useSearchParams();
+    const { brandName, modelName, generationCode, trimIndex } = useParams();
     const [data, setData] = useState<DetailResponse | null>(null);
     const [loading, setLoading] = useState(true);
-    const [selectedTrimId, setSelectedTrimId] = useState<number | null>(null);
     const [error, setError] = useState<string | null>(null);
-
-    // Accordion state
+    const [selectedTrimId, setSelectedTrimId] = useState<number | null>(null);
     const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
 
-    const goBack = () => {
-        if (window.history.length > 1) {
-            navigate(-1);
-            return;
-        }
-        navigate('/', { replace: true });
-    };
-
-    const toggleCategory = (category: string) => {
-        setOpenCategories(prev => ({ ...prev, [category]: !prev[category] }));
-    };
+    const goBack = () => navigate(-1);
 
     useEffect(() => {
         setError(null);
         setLoading(true);
-        fetch(`${API_BASE_URL}/api/trims/${id}?include_relations=true`)
-            .then(async (res) => {
-                const contentType = res.headers.get('content-type') || '';
-                if (!res.ok) {
-                    const text = await res.text().catch(() => '');
-                    throw new Error(text || `Request failed (${res.status})`);
-                }
-                if (!contentType.includes('application/json')) {
-                    const text = await res.text().catch(() => '');
-                    throw new Error(text || 'Unexpected response type.');
-                }
-                return res.json();
-            })
-            .then((payload: unknown) => {
-                const parsed = payload as Partial<DetailResponse>;
-                if (!parsed || typeof parsed !== 'object') {
-                    throw new Error('Invalid response.');
-                }
-                // We permit missing vehicle/trims if API is still partial, but ideally both exist
 
-                const safeData: DetailResponse = {
-                    vehicle: (parsed.vehicle || {}) as Vehicle,
-                    trims: Array.isArray(parsed.trims) ? parsed.trims : [],
-                };
+        const fetchData = async () => {
+            try {
+                if (brandName && modelName && generationCode && trimIndex) {
+                    console.log(`Resolving: ${brandName} > ${modelName} > ${generationCode} > Index ${trimIndex}`);
 
-                setData(safeData);
-                const wantedTrimIdRaw = (searchParams.get('trimId') || '').trim();
-                const wantedTrimId = wantedTrimIdRaw ? Number(wantedTrimIdRaw) : NaN;
-                if (safeData.trims.length > 0) {
-                    if (!Number.isNaN(wantedTrimId) && safeData.trims.some((t) => t.id === wantedTrimId)) {
-                        setSelectedTrimId(wantedTrimId);
-                    } else {
-                        setSelectedTrimId(safeData.trims[0].id);
+                    // 1. Resolve Brand
+                    const brandRes = await fetch(`${API_BASE_URL}/api/brands`);
+                    if (!brandRes.ok) throw new Error('Failed to load brands');
+                    const brands = await brandRes.json();
+                    const brand = brands.find((b: any) => b.name.toLowerCase() === brandName.toLowerCase());
+                    if (!brand) throw new Error(`Brand '${brandName}' not found`);
+
+                    // 2. Resolve Model
+                    const modelRes = await fetch(`${API_BASE_URL}/api/brands/${brand.id}/models`);
+                    if (!modelRes.ok) throw new Error('Failed to load models');
+                    const modelsData = await modelRes.json();
+                    const models = modelsData.value || [];
+                    const model = models.find((m: any) => m.name.toLowerCase() === modelName.toLowerCase());
+                    if (!model) throw new Error(`Model '${modelName}' not found`);
+
+                    // 3. Resolve Generation
+                    const genRes = await fetch(`${API_BASE_URL}/api/models/${model.id}/generations`);
+                    if (!genRes.ok) throw new Error('Failed to load generations');
+                    const gensData = await genRes.json();
+                    const generations = Array.isArray(gensData) ? gensData : (gensData.value || []);
+                    const generation = generations.find((g: any) => g.code.toLowerCase() === generationCode.toLowerCase());
+                    if (!generation) throw new Error(`Generation '${generationCode}' not found`);
+
+                    // 4. Fetch Trims
+                    const trimRes = await fetch(`${API_BASE_URL}/api/generations/${generation.id}/trims`);
+                    if (!trimRes.ok) throw new Error('Failed to load trims');
+                    const trimsData = await trimRes.json();
+                    const trims = Array.isArray(trimsData) ? trimsData : (trimsData.value || []);
+
+                    if (trims.length === 0) throw new Error('No trims found for this generation');
+
+                    // 5. Select Trim by Index
+                    const index = parseInt(trimIndex, 10) - 1; // 1-based to 0-based
+                    if (isNaN(index) || index < 0 || index >= trims.length) {
+                        throw new Error(`Invalid trim index: ${trimIndex}`);
                     }
+                    const selectedTrim = trims[index];
+
+                    // Construct Data Object
+                    const vehicleData: Vehicle = {
+                        id: model.id,
+                        brand: brand.name,
+                        model: model.name,
+                        generation: generation.code,
+                        image_url: generation.image_url || selectedTrim.image_url
+                    };
+
+                    setData({
+                        vehicle: vehicleData,
+                        trims: trims
+                    });
+                    setSelectedTrimId(selectedTrim.id);
                 }
-                setLoading(false);
-            })
-            .catch((err) => {
+            } catch (err) {
                 console.error('Failed to fetch details:', err);
                 const msg = err instanceof Error ? err.message : 'Failed to load vehicle details.';
                 setError(msg);
+            } finally {
                 setLoading(false);
-            });
-    }, [id, searchParams]);
+            }
+        };
+
+        fetchData();
+    }, [brandName, modelName, generationCode, trimIndex]);
+
+    const toggleCategory = (category: string) => {
+        setOpenCategories(prev => ({ ...prev, [category]: !prev[category] }));
+    };
 
     const addToCompare = (trim: Trim, specsToStore: Spec[]) => {
         if (!data) return;
@@ -149,7 +166,7 @@ function VehicleDetails() {
             const itemToStore = {
                 id: trim.id,
                 title,
-                vehicleId: id,
+                vehicleId: data.vehicle.id,
                 brand: data.vehicle.brand,
                 modelName: data.vehicle.model,
                 trimName: trim.name,
@@ -165,13 +182,6 @@ function VehicleDetails() {
     const trims = data?.trims || [];
 
     // Helper functions for categories (reused from previous version)
-    const normalizeCategory = (rawCategory: unknown) => {
-        const c = (typeof rawCategory === 'string' ? rawCategory : '').trim();
-        if (!c) return '';
-        const lower = c.toLowerCase();
-        if (lower === 'tech' || lower === 'general' || lower === 'misc' || lower === 'other') return '';
-        return c;
-    };
 
     const inferCategoryFromName = (name: string) => {
         const n = (name || '').trim().toLowerCase();
@@ -193,7 +203,6 @@ function VehicleDetails() {
     }, [selectedTrimId, trims]);
 
     const normalizedSpecs = useMemo<Spec[]>(() => {
-        const raw = (currentTrim as any)?.specs; // Map version sends this
         if (!currentTrim) return [];
         // Flatten logic for different structures
         let list: any[] = [];
@@ -279,7 +288,7 @@ function VehicleDetails() {
 
     if (error) return (
         <div className="min-h-screen bg-[#0f172a] flex items-center justify-center p-4">
-            <div className="bg-[#1e293b] p-8 rounded-2xl border border-red-500/20 text-center max-w-md">
+            <div className="bg-black/60 backdrop-blur-xl p-8 rounded-2xl border border-red-500/20 text-center max-w-md">
                 <div className="text-red-400 font-bold mb-2">System Error</div>
                 <div className="text-slate-400 text-sm mb-6">{error}</div>
                 <button onClick={goBack} className="px-6 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors">
@@ -292,14 +301,16 @@ function VehicleDetails() {
     if (!data) return null;
 
     return (
-        <div className="min-h-screen bg-[#0f172a] text-slate-200 font-sans selection:bg-blue-500/30">
-            {/* Navigation Bar Placeholder */}
-            <div className="border-b border-slate-800 bg-[#0f172a]/80 backdrop-blur-md sticky top-0 z-50">
-                <div className="max-w-7xl mx-auto px-4 h-16 flex items-center gap-4">
-                    <button onClick={goBack} className="p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-400 hover:text-white">
+        <div className="min-h-screen text-slate-200 font-sans selection:bg-blue-500/30 pt-24">
+            {/* Navigation Bar Placeholder - Breadcrumbs */}
+            <div className="border-b border-white/10 bg-transparent mb-6">
+                <div className="max-w-7xl mx-auto px-4 h-12 flex items-center gap-4">
+                    <button onClick={goBack} className="p-2 hover:bg-white/10 rounded-full transition-colors text-slate-400 hover:text-white">
                         <ArrowLeft size={20} />
                     </button>
-                    <div className="text-sm font-medium text-slate-400">Vehicle Database / {data.vehicle.brand} / {data.vehicle.model}</div>
+                    <div className="text-sm font-medium text-slate-400">
+                        Vehicle Database <span className="mx-2">/</span> {data.vehicle.brand} <span className="mx-2">/</span> {data.vehicle.model}
+                    </div>
                 </div>
             </div>
 
@@ -310,7 +321,7 @@ function VehicleDetails() {
 
                     {/* LEFT COLUMN: VISUALS (5 Cols) */}
                     <div className="lg:col-span-6 xl:col-span-7 flex flex-col gap-4">
-                        <div className="relative aspect-[16/10] bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 shadow-2xl group">
+                        <div className="relative aspect-[16/10] bg-black/20 backdrop-blur-md rounded-2xl overflow-hidden border border-white/10 shadow-2xl group">
                             {/* Blueprint Grid Overlay */}
                             <div className="absolute inset-0 z-10 opacity-20 pointer-events-none"
                                 style={{ backgroundImage: 'linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
@@ -340,7 +351,7 @@ function VehicleDetails() {
                         {/* Thumbnails (Mockup) */}
                         <div className="grid grid-cols-4 gap-3">
                             {[heroImageUrl, heroImageUrl, heroImageUrl].map((img, i) => (
-                                <div key={i} className={`aspect-video rounded-lg overflow-hidden border ${i === 0 ? 'border-primary' : 'border-slate-800 opacity-50 hover:opacity-100'} cursor-pointer transition-all bg-slate-900`}>
+                                <div key={i} className={`aspect-video rounded-lg overflow-hidden border ${i === 0 ? 'border-primary' : 'border-white/10 opacity-50 hover:opacity-100'} cursor-pointer transition-all bg-black/20 backdrop-blur-md`}>
                                     {img && <img src={img} className="w-full h-full object-cover" />}
                                 </div>
                             ))}
@@ -370,7 +381,7 @@ function VehicleDetails() {
                                 { icon: Gauge, label: 'Torque', value: quickStats?.torque, color: 'text-emerald-400' },
                                 { icon: Weight, label: 'Weight', value: quickStats?.weight, color: 'text-purple-400' },
                             ].map((stat, i) => (
-                                <div key={i} className="bg-[#1e293b] rounded-xl p-3 border border-slate-700/50 flex flex-col items-center justify-center text-center gap-2 group hover:border-slate-600 transition-colors">
+                                <div key={i} className="bg-black/40 backdrop-blur-md rounded-xl p-3 border border-white/5 flex flex-col items-center justify-center text-center gap-2 group hover:bg-black/60 transition-all duration-300">
                                     <stat.icon size={20} className={stat.color} />
                                     <div>
                                         <div className="text-[10px] text-slate-500 uppercase font-semibold">{stat.label}</div>
@@ -392,19 +403,27 @@ function VehicleDetails() {
                                     return (
                                         <button
                                             key={t.id}
-                                            onClick={() => setSelectedTrimId(t.id)}
+                                            onClick={() => {
+                                                if (brandName && modelName && generationCode) {
+                                                    // Find new index
+                                                    const newIndex = trims.findIndex(x => x.id === t.id) + 1;
+                                                    navigate(`/brand/${brandName}/${modelName}/${generationCode}/${newIndex}`);
+                                                } else {
+                                                    setSelectedTrimId(t.id);
+                                                }
+                                            }}
                                             className={`
-                                                relative w-full text-left p-4 rounded-xl border transition-all duration-200 group
+                                                relative w-full text-left p-4 rounded-xl border transition-all duration-200 group backdrop-blur-sm
                                                 ${isActive
-                                                    ? 'bg-blue-600/10 border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.15)]'
-                                                    : 'bg-[#1e293b] border-slate-800 hover:border-slate-600 hover:bg-slate-800/80'}
+                                                    ? 'bg-primary/20 border-primary shadow-[0_0_20px_rgba(249,115,22,0.15)]'
+                                                    : 'bg-transparent border-white/10 hover:border-white/20 hover:bg-white/5'}
                                             `}
                                         >
                                             <div className="flex items-center justify-between mb-1">
-                                                <span className={`font-bold ${isActive ? 'text-blue-400' : 'text-slate-200'}`}>
+                                                <span className={`font-bold ${isActive ? 'text-primary' : 'text-slate-200'}`}>
                                                     {t.name}
                                                 </span>
-                                                {isActive && <Check size={16} className="text-blue-500" />}
+                                                {isActive && <Check size={16} className="text-primary" />}
                                             </div>
                                             <div className="text-xs text-slate-500 flex items-center gap-2">
                                                 {tAny.year} • {tAny.fuel_type || 'N/A'} • {tAny.transmission_type || 'N/A'}
@@ -419,12 +438,12 @@ function VehicleDetails() {
                         <div className="flex gap-3 pt-2">
                             <button
                                 onClick={() => currentTrim && addToCompare(currentTrim, normalizedSpecs)}
-                                className="flex-1 bg-primary hover:bg-primary-hover text-white font-bold h-12 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-orange-500/20 active:scale-95"
+                                className="flex-1 bg-primary/80 hover:bg-primary backdrop-blur-md border border-primary/50 text-white font-bold h-12 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-orange-500/10 active:scale-95"
                             >
                                 <Plus size={20} />
                                 Compare Vehicle
                             </button>
-                            <button className="flex-1 bg-transparent border border-slate-600 hover:border-slate-400 text-slate-300 font-semibold h-12 rounded-xl flex items-center justify-center gap-2 transition-all hover:bg-slate-800">
+                            <button className="flex-1 bg-white/5 hover:bg-white/10 backdrop-blur-md border border-white/10 hover:border-white/20 text-slate-300 font-semibold h-12 rounded-xl flex items-center justify-center gap-2 transition-all">
                                 <Download size={20} />
                                 Tech Sheet
                             </button>
@@ -444,10 +463,10 @@ function VehicleDetails() {
                         {Object.entries(groupedSpecs).map(([category, specs]) => {
                             const isOpen = openCategories[category];
                             return (
-                                <div key={category} className="bg-[#1e293b] border border-slate-800 rounded-2xl overflow-hidden h-fit transform transition-all hover:border-slate-700">
+                                <div key={category} className="bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden h-fit transform transition-all hover:border-white/20">
                                     <button
                                         onClick={() => toggleCategory(category)}
-                                        className="w-full flex items-center justify-between p-5 bg-slate-800/50 hover:bg-slate-800 transition-colors"
+                                        className="w-full flex items-center justify-between p-5 bg-transparent hover:bg-white/5 transition-colors"
                                     >
                                         <span className="font-bold text-lg text-slate-200">{category}</span>
                                         {isOpen ? <ChevronUp size={20} className="text-slate-400" /> : <ChevronDown size={20} className="text-slate-500" />}
@@ -464,9 +483,9 @@ function VehicleDetails() {
                                                             <span className="text-sm font-medium text-slate-200">{spec.value}</span>
                                                         </div>
                                                         {percentage > 0 && (
-                                                            <div className="h-1.5 w-full bg-slate-900 rounded-full overflow-hidden">
+                                                            <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
                                                                 <div
-                                                                    className="h-full rounded-full transition-all duration-1000 ease-out bg-gradient-to-r from-blue-600 to-blue-400"
+                                                                    className="h-full rounded-full transition-all duration-1000 ease-out bg-gradient-to-r from-primary to-orange-400"
                                                                     style={{ width: `${percentage}%` }}
                                                                 ></div>
                                                             </div>

@@ -11,8 +11,12 @@ import GolfMkGroup from './pages/GolfMkGroup.tsx';
 import Compare from './pages/Compare.tsx';
 import Guides from './pages/Guides.tsx';
 import TransmissionGuide from './pages/TransmissionGuide.tsx';
+import DSGVariantsGuide from './pages/DSGVariantsGuide.tsx';
 import EngineTermsGuide from './pages/EngineTermsGuide.tsx';
 import About from './pages/About.tsx';
+import EngineSelect from './pages/EngineSelect.tsx';
+import GenerationSelect from './pages/GenerationSelect.tsx';
+import TrimSelect from './pages/TrimSelect.tsx';
 
 function App() {
   return (
@@ -30,8 +34,22 @@ function App() {
           <Route path="/compare" element={<Compare />} />
           <Route path="/guides" element={<Guides />} />
           <Route path="/guides/transmission" element={<TransmissionGuide />} />
+          <Route path="/guides/transmission/dsg" element={<DSGVariantsGuide />} />
           <Route path="/guides/engine" element={<EngineTermsGuide />} />
           <Route path="/about" element={<About />} />
+
+
+          <Route path="/selection/brand/:brand/model/:modelId" element={<EngineSelect />} />
+          <Route path="/selection/brand/:brand/model/:modelId/engine/:engineSlug" element={<GenerationSelect />} />
+          <Route path="/selection/brand/:brand/model/:modelId/engine/:engineSlug/generation/:genSlug" element={<TrimSelect />} />
+
+          {/* NEW: Generation-based hierarchy routes */}
+          <Route path="/brand/:brandName/:modelName" element={<GenerationSelect />} />
+          <Route path="/brand/:brandName/:modelName/:generationCode" element={<TrimSelect />} />
+          <Route path="/models/:modelId/generations" element={<GenerationSelect />} />
+          <Route path="/generations/:generationId/trims" element={<TrimSelect />} />
+          <Route path="/trims/:trimId" element={<Navigate to="/" replace />} /> {/* Deprecated */}
+          <Route path="/brand/:brandName/:modelName/:generationCode/:trimIndex" element={<VehicleDetails />} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

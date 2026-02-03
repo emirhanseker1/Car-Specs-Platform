@@ -118,3 +118,13 @@ func (s *ModelService) DeleteModel(id int64) error {
 
 	return nil
 }
+
+// ListVehiclesByName retrieves aggregated vehicles for a brand
+func (s *ModelService) ListVehiclesByName(brandName string) ([]*models.VehicleListItem, error) {
+	return s.modelRepo.ListVehiclesByName(brandName)
+}
+
+// GetGeneration retrieves a generation with parent model info
+func (s *ModelService) GetGeneration(id int64) (*models.Generation, *models.Model, error) {
+	return s.modelRepo.GetGeneration(id)
+}
