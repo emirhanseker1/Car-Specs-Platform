@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/emirh/car-specs/backend/internal/models"
+	"github.com/emirh/car-specs-ai/backend/internal/models"
 )
 
 type ModelRepository struct {
@@ -151,6 +151,7 @@ func (r *ModelRepository) ListVehiclesByName(brandName string) ([]*models.Vehicl
 			m.id,
 			MAX(b.name), 
 			MAX(m.name), 
+			MAX(m.image_url),
 			COALESCE(g.code, ''), 
 			g.start_year, g.end_year,
 			GROUP_CONCAT(t.name)
@@ -175,16 +176,26 @@ func (r *ModelRepository) ListVehiclesByName(brandName string) ([]*models.Vehicl
 		var startYear, endYear sql.NullInt64
 		// var isFacelift sql.NullBool // Removed
 		var engines sql.NullString
+		var imageURL sql.NullString
 
-		// Order: g.id, m.id, b.name, m.name, g.code, start, end, engines
+		// Order: g.id, m.id, b.name, m.name, m.image_url, g.code, start, end, engines
 		err := rows.Scan(
 			&v.ID,
 			&v.ModelID,
 			&v.Brand,
 			&v.Model,
+			&imageURL,
 			&v.Generation,
 			&startYear, &endYear, &engines,
 		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if imageURL.Valid {
+			v.ImageURL = imageURL.String
+		}
 
 		if err != nil {
 			return nil, err

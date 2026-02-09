@@ -17,6 +17,7 @@ import About from './pages/About.tsx';
 import EngineSelect from './pages/EngineSelect.tsx';
 import GenerationSelect from './pages/GenerationSelect.tsx';
 import TrimSelect from './pages/TrimSelect.tsx';
+import ChatWidget from './components/Chat/ChatWidget.tsx';
 
 function App() {
   return (
@@ -54,7 +55,9 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
+      <ChatWidget />
     </Router>
+
   );
 }
 

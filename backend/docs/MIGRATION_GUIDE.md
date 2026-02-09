@@ -293,7 +293,7 @@ package repository
 
 import (
     "database/sql"
-    "github.com/emirh/car-specs/backend/internal/models"
+    "github.com/emirh/car-specs-ai/backend/internal/models"
 )
 
 type GenerationRepository struct {

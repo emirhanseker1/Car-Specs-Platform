@@ -3,7 +3,7 @@ package repository
 import (
 	"fmt" // Added for fmt.Errorf
 
-	"github.com/emirh/car-specs/backend/internal/models"
+	"github.com/emirh/car-specs-ai/backend/internal/models"
 )
 
 // GetFeaturedTrims returns random trims with images for the homepage

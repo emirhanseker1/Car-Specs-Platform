@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/emirh/car-specs/backend/internal/formatter"
-	"github.com/emirh/car-specs/backend/internal/models"
-	"github.com/emirh/car-specs/backend/internal/service"
+	"github.com/emirh/car-specs-ai/backend/internal/formatter"
+	"github.com/emirh/car-specs-ai/backend/internal/models"
+	"github.com/emirh/car-specs-ai/backend/internal/service"
 )
 
 type TrimHandler struct {

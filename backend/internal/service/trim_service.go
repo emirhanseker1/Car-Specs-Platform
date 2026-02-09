@@ -3,8 +3,8 @@ package service
 import (
 	"fmt"
 
-	"github.com/emirh/car-specs/backend/internal/models"
-	"github.com/emirh/car-specs/backend/internal/repository"
+	"github.com/emirh/car-specs-ai/backend/internal/models"
+	"github.com/emirh/car-specs-ai/backend/internal/repository"
 )
 
 type TrimService struct {

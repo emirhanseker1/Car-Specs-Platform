@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Car, BookOpen, GitCompare, Info, Search } from 'lucide-react';
+import { Car, BookOpen, GitCompare, Info, Search, Sparkles } from 'lucide-react';
 
 const navItems = [
   { to: '/', label: 'Keşfet', icon: Car, end: true },
@@ -18,8 +18,34 @@ export default function TopNav() {
           <Car className="h-5 w-5 text-white" />
         </div>
         <div>
-          <div className="text-white font-bold leading-tight">Car Specs</div>
+          <div className="text-white font-bold leading-tight">Car Specs AI</div>
           <div className="text-xs text-white/60">Türkiye araç teknik bilgi platformu</div>
+        </div>
+      </div>
+
+      {/* AI Search Input */}
+      <div className="hidden md:flex flex-1 max-w-xl mx-6">
+        <div
+          className="relative w-full group cursor-text"
+          onClick={() => {
+            const event = new CustomEvent('open-chat-trigger');
+            window.dispatchEvent(event);
+          }}
+        >
+          <div className="absolute inset-0 bg-primary/40 rounded-full blur-md opacity-50 group-hover:opacity-100 transition-opacity duration-500 animate-pulse" />
+
+          {/* Main Container */}
+          <div className="relative flex items-center gap-3 bg-black/40 backdrop-blur-md border px-5 py-3 rounded-full transition-all duration-300
+            border-primary/60 group-hover:border-primary group-hover:bg-black/60 shadow-[0_0_15px_rgba(255,90,31,0.3)]">
+
+            <Sparkles className="w-5 h-5 text-primary drop-shadow-[0_0_8px_rgba(255,90,31,0.8)] animate-pulse" />
+
+            <span className="text-base font-bold text-white tracking-wide group-hover:text-white transition-colors whitespace-nowrap">
+              Merak ettiğini sor
+            </span>
+
+
+          </div>
         </div>
       </div>
 

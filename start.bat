@@ -27,6 +27,9 @@ start "Car Specs Backend" cmd /k "cd backend && go run cmd/api/main.go"
 echo [START] Starting Frontend...
 start "Car Specs Frontend" cmd /k "cd frontend && npm run dev"
 
+echo [START] Starting Python AI Service...
+start "Car Spec AI Service" cmd /k "cd python-service && python main.py"
+
 echo.
 echo [INFO] Waiting for services to initialize...
 timeout /t 5 >nul
@@ -38,6 +41,7 @@ echo ==========================================
 echo    System Running!
 echo    Backend: http://localhost:8080
 echo    Frontend: http://localhost:5173
+echo    AI Service: http://localhost:8000
 echo ==========================================
 echo.
 echo Press any key to exit this launcher (servers will keep running)...

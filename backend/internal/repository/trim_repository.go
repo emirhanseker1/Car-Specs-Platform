@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/emirh/car-specs/backend/internal/models"
+	"github.com/emirh/car-specs-ai/backend/internal/models"
 )
 
 type TrimRepository struct {
@@ -333,7 +333,7 @@ func (r *TrimRepository) ListByModel(modelID int64) ([]*models.Trim, error) {
 func (r *TrimRepository) ListByGeneration(genID int64) ([]*models.Trim, error) {
 	query := `
 		SELECT 
-			id, generation_id, model_id, name, year, start_year, end_year, generation, is_facelift, market,
+			id, generation_id, COALESCE(model_id, 0), name, COALESCE(year, 0), start_year, end_year, generation, COALESCE(is_facelift, 0), COALESCE(market, ''),
 			engine_type, fuel_type, displacement_cc, cylinders, cylinder_layout,
 			power_hp, power_kw, torque_nm, engine_code,
 			acceleration_0_100, top_speed_kmh,
@@ -348,7 +348,7 @@ func (r *TrimRepository) ListByGeneration(genID int64) ([]*models.Trim, error) {
 			created_at, updated_at
 		FROM trims
 		WHERE generation_id = ?
-		ORDER BY year DESC, name
+		ORDER BY COALESCE(year, 0) DESC, name
 	`
 	rows, err := r.db.Query(query, genID)
 	if err != nil {

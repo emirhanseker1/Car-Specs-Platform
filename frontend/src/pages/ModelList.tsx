@@ -1,15 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-
-interface Vehicle {
-    id: number;
-    brand: string;
-    model: string;
-    generation: string;
-    image_url: string;
-    engine_options?: string[];
-    model_id?: number;
-}
+import { api } from '../services/api';
+import type { Vehicle } from '../types';
 
 interface ModelCard {
     brand: string;
@@ -20,7 +12,23 @@ interface ModelCard {
     engine_options: string[];
 }
 
-const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:8080';
+// Configuration for specific model image styling
+// You can adjust scales and translations here
+const MODEL_STYLES: Record<string, string> = {
+    'A4': 'scale-[2.1] translate-x-[20px] translate-y-[-20px] group-hover:scale-[2.2]',
+    'A3': 'scale-[1.7] translate-y-[-10px] group-hover:scale-[1.78]',
+    '1 Serisi': 'scale-[1.6] group-hover:scale-[1.7]',
+    '3 Serisi': 'scale-[1.6] translate-x-[-20px] translate-y-[20px] group-hover:scale-[1.7]',
+    '5 Serisi': 'scale-[2.9] translate-x-[5px] translate-y-[-70px] group-hover:scale-[3]',
+    'Golf': 'scale-[1.8] translate-x-[0px] translate-y-[-15px] group-hover:scale-[1.9]',
+    'Passat': 'scale-[2] translate-x-[0px] translate-y-[10px] group-hover:scale-[2.1]',
+    // Add new models here like:
+    // 'Model Name': 'tailwind-classes'
+};
+
+function getModelStyle(modelName: string) {
+    return MODEL_STYLES[modelName] || 'group-hover:scale-110';
+}
 
 function ModelList() {
     const navigate = useNavigate();
@@ -39,15 +47,15 @@ function ModelList() {
     };
 
     useEffect(() => {
-        const brandQuery = decodedBrandName || 'Audi';
-        fetch(`${API_BASE_URL}/api/vehicles?brand=${encodeURIComponent(brandQuery)}`)
-            .then((res) => res.json())
+        setLoading(true);
+        api.getVehicles(decodedBrandName)
             .then((data) => {
                 setVehicles(data || []);
-                setLoading(false);
             })
             .catch((err) => {
-                console.error('Failed to fetch vehicles:', err);
+                console.error('Veri çekme hatası:', err);
+            })
+            .finally(() => {
                 setLoading(false);
             });
     }, [decodedBrandName]);
@@ -124,34 +132,43 @@ function ModelList() {
                         </p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
                         {models.map((m) => (
                             <Link
                                 key={m.model}
                                 to={`/brand/${brandName}/${m.model}`}
-                                className="group bg-black/40 backdrop-blur-md border border-white/10 rounded-xl shadow-lg hover:shadow-2xl hover:border-primary/50 transition-all overflow-hidden"
+                                className="group bg-black/40 backdrop-blur-md border border-white/10 rounded-xl shadow-lg hover:shadow-2xl hover:border-primary/50 transition-[transform,border,shadow] duration-300 overflow-hidden"
                             >
                                 {/* Model Image */}
-                                <div className="relative h-40 bg-white/5 flex items-center justify-center p-6">
-                                    {m.image_url ? (
-                                        <img
-                                            src={m.image_url}
-                                            alt={m.model}
-                                            className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
-                                        />
-                                    ) : m.model === 'A3' ? (
-                                        <img
-                                            src="/images/audi-a3.png"
-                                            alt="Audi A3"
-                                            className="w-full h-full object-contain scale-[1.6] group-hover:scale-[1.7] transition-transform duration-300"
-                                        />
-                                    ) : (
-                                        <div className="text-center">
-                                            <div className="text-4xl font-bold text-white/30 group-hover:text-primary/50 transition-colors">
-                                                {m.model.charAt(0)}
-                                            </div>
-                                        </div>
-                                    )}
+                                <div className="relative h-48 bg-white/5 flex items-center justify-center p-6">
+                                    {(() => {
+                                        // Generate model image path based on brand and model
+                                        // Note: API returns incorrect paths, so we generate correct ones
+                                        const getModelImagePath = () => {
+                                            const brandFolder = decodedBrandName.toLowerCase() === 'volkswagen' ? 'vw' : decodedBrandName.toLowerCase();
+                                            const modelSlug = m.model.toLowerCase()
+                                                .replace(/\s+serisi$/i, '-series')  // "1 Serisi" -> "1-series"
+                                                .replace(/\s+/g, '-');               // spaces to dashes
+                                            return `/images/models/${brandFolder}/${brandFolder}-${modelSlug}.png`;
+                                        };
+
+                                        // Always use generated path (API image_url has wrong folder structure)
+                                        const imagePath = getModelImagePath();
+
+                                        return (
+                                            <img
+                                                src={imagePath}
+                                                alt={m.model}
+                                                className={`object-contain transition-transform duration-300 ${getModelStyle(m.model)} w-full h-full`}
+                                                onError={(e) => {
+                                                    // Fallback to placeholder on error
+                                                    const target = e.target as HTMLImageElement;
+                                                    target.style.display = 'none';
+                                                    target.parentElement!.innerHTML = `<div class="text-center"><div class="text-4xl font-bold text-white/30">${m.model.charAt(0)}</div></div>`;
+                                                }}
+                                            />
+                                        );
+                                    })()}
                                 </div>
 
                                 {/* Model Name & Info */}

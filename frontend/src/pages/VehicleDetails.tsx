@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 import {
     ArrowLeft,
     Timer,
@@ -10,37 +11,15 @@ import {
     Plus,
     ChevronDown,
     ChevronUp,
-    Check,
     CarFront,
-    Info
+    Info,
+    Settings,
 } from 'lucide-react';
-
-interface Spec {
-    category: string;
-    name: string;
-    value: string;
-}
-
-interface Trim {
-    id: number;
-    name: string;
-    specs: unknown; // Flexible to handle varying structures
-}
-
-interface Vehicle {
-    id: number;
-    brand: string;
-    model: string;
-    generation: string;
-    image_url: string;
-}
-
-interface DetailResponse {
-    vehicle: Vehicle;
-    trims: Trim[];
-}
-
-const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:8080';
+import { api } from '../services/api';
+import type { DetailResponse, Spec, Trim, Vehicle } from '../types';
+import { DSG_VARIANTS } from '../data/dsgVariants';
+import DSGVariantModal from '../components/DSGVariantModal';
+import { detectTransmissionVariant } from '../utils/dsgMatcher';
 
 // Helper to determine progress bar percentage for specs
 const getSpecPercentage = (name: string, valueStr: string): number => {
@@ -73,6 +52,7 @@ function VehicleDetails() {
     const [error, setError] = useState<string | null>(null);
     const [selectedTrimId, setSelectedTrimId] = useState<number | null>(null);
     const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
+    const [expandedVariantCode, setExpandedVariantCode] = useState<string | null>(null);
 
     const goBack = () => navigate(-1);
 
@@ -83,36 +63,26 @@ function VehicleDetails() {
         const fetchData = async () => {
             try {
                 if (brandName && modelName && generationCode && trimIndex) {
-                    console.log(`Resolving: ${brandName} > ${modelName} > ${generationCode} > Index ${trimIndex}`);
-
                     // 1. Resolve Brand
-                    const brandRes = await fetch(`${API_BASE_URL}/api/brands`);
-                    if (!brandRes.ok) throw new Error('Failed to load brands');
-                    const brands = await brandRes.json();
+                    const brands = await api.getBrands();
                     const brand = brands.find((b: any) => b.name.toLowerCase() === brandName.toLowerCase());
                     if (!brand) throw new Error(`Brand '${brandName}' not found`);
 
                     // 2. Resolve Model
-                    const modelRes = await fetch(`${API_BASE_URL}/api/brands/${brand.id}/models`);
-                    if (!modelRes.ok) throw new Error('Failed to load models');
-                    const modelsData = await modelRes.json();
-                    const models = modelsData.value || [];
+                    const modelsData = await api.getModels(brand.id);
+                    const models = modelsData?.value || [];
                     const model = models.find((m: any) => m.name.toLowerCase() === modelName.toLowerCase());
                     if (!model) throw new Error(`Model '${modelName}' not found`);
 
                     // 3. Resolve Generation
-                    const genRes = await fetch(`${API_BASE_URL}/api/models/${model.id}/generations`);
-                    if (!genRes.ok) throw new Error('Failed to load generations');
-                    const gensData = await genRes.json();
-                    const generations = Array.isArray(gensData) ? gensData : (gensData.value || []);
+                    const gensData = await api.getGenerations(model.id);
+                    const generations = !gensData ? [] : (Array.isArray(gensData) ? gensData : (gensData.value || []));
                     const generation = generations.find((g: any) => g.code.toLowerCase() === generationCode.toLowerCase());
                     if (!generation) throw new Error(`Generation '${generationCode}' not found`);
 
                     // 4. Fetch Trims
-                    const trimRes = await fetch(`${API_BASE_URL}/api/generations/${generation.id}/trims`);
-                    if (!trimRes.ok) throw new Error('Failed to load trims');
-                    const trimsData = await trimRes.json();
-                    const trims = Array.isArray(trimsData) ? trimsData : (trimsData.value || []);
+                    const trimsData = await api.getTrims(generation.id);
+                    const trims = !trimsData ? [] : (Array.isArray(trimsData) ? trimsData : (trimsData.value || []));
 
                     if (trims.length === 0) throw new Error('No trims found for this generation');
 
@@ -146,8 +116,8 @@ function VehicleDetails() {
                 setLoading(false);
             }
         };
-
         fetchData();
+
     }, [brandName, modelName, generationCode, trimIndex]);
 
     const toggleCategory = (category: string) => {
@@ -181,8 +151,6 @@ function VehicleDetails() {
 
     const trims = data?.trims || [];
 
-    // Helper functions for categories (reused from previous version)
-
     const inferCategoryFromName = (name: string) => {
         const n = (name || '').trim().toLowerCase();
         if (!n) return 'General';
@@ -204,25 +172,18 @@ function VehicleDetails() {
 
     const normalizedSpecs = useMemo<Spec[]>(() => {
         if (!currentTrim) return [];
-        // Flatten logic for different structures
         let list: any[] = [];
-
-        // Handle map/struct flattening as done in handler
-        // If currentTrim is a flat object from manual loop
-        // We iterate generic keys excluding known ones
         const knownKeys = ['id', 'name', 'year', 'generation', 'model_id', 'generation_id', 'created_at', 'updated_at', 'image_url', 'msrp_price', 'currency', 'market', 'is_facelift'];
 
         if (currentTrim && typeof currentTrim === 'object') {
             Object.entries(currentTrim).forEach(([k, v]) => {
-                if (knownKeys.includes(k) || typeof v === 'object') return; // Skip objects and metadata
+                if (knownKeys.includes(k) || typeof v === 'object') return;
                 if (v === null || v === 0 || v === '') return;
 
-                // Construct spec
                 const name = k.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                 const valStr = String(v);
                 const category = inferCategoryFromName(name);
 
-                // Add units logic (simple lookup or rely on key name)
                 let suffix = '';
                 if (k.includes('_mm')) suffix = ' mm';
                 else if (k.includes('_kg')) suffix = ' kg';
@@ -232,7 +193,6 @@ function VehicleDetails() {
                 else if (k.includes('_nm')) suffix = ' Nm';
                 else if (k.includes('_cc')) suffix = ' cc';
 
-                // Clean key name for display
                 const displayName = name.replace(/( Mm| Kg| L| Hp| Kw| Nm| Cc| Kmh| 0 100| Comb| City| Hwy)$/i, '');
 
                 list.push({
@@ -253,7 +213,6 @@ function VehicleDetails() {
             return acc;
         }, {} as Record<string, Spec[]>);
 
-        // Default open the first category
         if (Object.keys(grouped).length > 0 && Object.keys(openCategories).length === 0) {
             setOpenCategories({ [Object.keys(grouped)[0]]: true });
         }
@@ -268,7 +227,6 @@ function VehicleDetails() {
         return raw;
     }, [data?.vehicle, currentTrim]);
 
-    // Derived Quick Stats
     const quickStats = useMemo(() => {
         if (!currentTrim) return null;
         const t = currentTrim as any;
@@ -279,6 +237,15 @@ function VehicleDetails() {
             weight: t.curb_weight_kg ? `${t.curb_weight_kg} kg` : '-',
         };
     }, [currentTrim]);
+
+    useEffect(() => {
+        if (expandedVariantCode) {
+            document.body.classList.add('modal-open');
+        } else {
+            document.body.classList.remove('modal-open');
+        }
+        return () => document.body.classList.remove('modal-open');
+    }, [expandedVariantCode]);
 
     if (loading) return (
         <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
@@ -302,7 +269,6 @@ function VehicleDetails() {
 
     return (
         <div className="min-h-screen text-slate-200 font-sans selection:bg-blue-500/30 pt-24">
-            {/* Navigation Bar Placeholder - Breadcrumbs */}
             <div className="border-b border-white/10 bg-transparent mb-6">
                 <div className="max-w-7xl mx-auto px-4 h-12 flex items-center gap-4">
                     <button onClick={goBack} className="p-2 hover:bg-white/10 rounded-full transition-colors text-slate-400 hover:text-white">
@@ -315,19 +281,14 @@ function VehicleDetails() {
             </div>
 
             <main className="max-w-7xl mx-auto px-4 py-8 space-y-8">
-
-                {/* HERO SECTION */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-
-                    {/* LEFT COLUMN: VISUALS (5 Cols) */}
+                    {/* LEFT COLUMN: VISUALS */}
                     <div className="lg:col-span-6 xl:col-span-7 flex flex-col gap-4">
                         <div className="relative aspect-[16/10] bg-black/20 backdrop-blur-md rounded-2xl overflow-hidden border border-white/10 shadow-2xl group">
-                            {/* Blueprint Grid Overlay */}
                             <div className="absolute inset-0 z-10 opacity-20 pointer-events-none"
                                 style={{ backgroundImage: 'linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
                             </div>
 
-                            {/* Main Image */}
                             {heroImageUrl ? (
                                 <img
                                     src={heroImageUrl}
@@ -340,7 +301,6 @@ function VehicleDetails() {
                                 </div>
                             )}
 
-                            {/* Tags Overlay */}
                             <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
                                 <span className="bg-blue-500/10 backdrop-blur-md border border-blue-500/20 text-blue-400 text-xs font-bold px-3 py-1 rounded-full">
                                     {data.vehicle.generation || 'GEN'}
@@ -348,7 +308,6 @@ function VehicleDetails() {
                             </div>
                         </div>
 
-                        {/* Thumbnails (Mockup) */}
                         <div className="grid grid-cols-4 gap-3">
                             {[heroImageUrl, heroImageUrl, heroImageUrl].map((img, i) => (
                                 <div key={i} className={`aspect-video rounded-lg overflow-hidden border ${i === 0 ? 'border-primary' : 'border-white/10 opacity-50 hover:opacity-100'} cursor-pointer transition-all bg-black/20 backdrop-blur-md`}>
@@ -358,10 +317,8 @@ function VehicleDetails() {
                         </div>
                     </div>
 
-                    {/* RIGHT COLUMN: DATA & IDENTITY (6 Cols) */}
+                    {/* RIGHT COLUMN: DATA */}
                     <div className="lg:col-span-6 xl:col-span-5 flex flex-col gap-6">
-
-                        {/* Header */}
                         <div>
                             <h1 className="text-4xl font-bold text-white tracking-tight mb-2">
                                 {data.vehicle.brand} {data.vehicle.model}
@@ -373,7 +330,6 @@ function VehicleDetails() {
                             </div>
                         </div>
 
-                        {/* Quick Stats Module */}
                         <div className="grid grid-cols-4 gap-3">
                             {[
                                 { icon: Timer, label: '0-100', value: quickStats?.accel, color: 'text-blue-400' },
@@ -391,50 +347,57 @@ function VehicleDetails() {
                             ))}
                         </div>
 
-                        {/* Trim Selection (Cards) */}
                         <div className="space-y-3">
                             <div className="flex items-center justify-between text-xs text-slate-400 uppercase font-semibold tracking-wider">
-                                Select Configuration
+                                Transmission
                             </div>
-                            <div className="grid grid-cols-1 gap-2 max-h-[240px] overflow-y-auto pr-2 custom-scrollbar">
-                                {trims.map((t) => {
-                                    const isActive = t.id === selectedTrimId;
-                                    const tAny = t as any;
+
+                            {(() => {
+                                const matchingVariant = currentTrim ? detectTransmissionVariant(data.vehicle.model, currentTrim, data.vehicle.brand) : null;
+
+                                if (matchingVariant) {
                                     return (
                                         <button
-                                            key={t.id}
-                                            onClick={() => {
-                                                if (brandName && modelName && generationCode) {
-                                                    // Find new index
-                                                    const newIndex = trims.findIndex(x => x.id === t.id) + 1;
-                                                    navigate(`/brand/${brandName}/${modelName}/${generationCode}/${newIndex}`);
-                                                } else {
-                                                    setSelectedTrimId(t.id);
-                                                }
-                                            }}
-                                            className={`
-                                                relative w-full text-left p-4 rounded-xl border transition-all duration-200 group backdrop-blur-sm
-                                                ${isActive
-                                                    ? 'bg-primary/20 border-primary shadow-[0_0_20px_rgba(249,115,22,0.15)]'
-                                                    : 'bg-transparent border-white/10 hover:border-white/20 hover:bg-white/5'}
-                                            `}
+                                            onClick={() => setExpandedVariantCode(matchingVariant.code)}
+                                            className="w-full relative overflow-hidden group bg-gradient-to-br from-slate-900 to-black border border-white/10 rounded-xl hover:border-primary/50 transition-all duration-300 text-left"
                                         >
-                                            <div className="flex items-center justify-between mb-1">
-                                                <span className={`font-bold ${isActive ? 'text-primary' : 'text-slate-200'}`}>
-                                                    {t.name}
-                                                </span>
-                                                {isActive && <Check size={16} className="text-primary" />}
-                                            </div>
-                                            <div className="text-xs text-slate-500 flex items-center gap-2">
-                                                {tAny.year} • {tAny.fuel_type || 'N/A'} • {tAny.transmission_type || 'N/A'}
+                                            <div className={`absolute inset-0 bg-gradient-to-br ${matchingVariant.color} opacity-10 group-hover:opacity-20 transition-opacity`} />
+
+                                            <div className="relative p-4 flex items-center justify-between">
+                                                <div className="flex items-center gap-4">
+                                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center bg-gradient-to-br ${matchingVariant.color} shadow-lg ring-1 ring-white/10`}>
+                                                        <Settings className="w-5 h-5 text-white" />
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-white font-bold text-lg leading-none mb-1">{matchingVariant.code}</div>
+                                                        <div className="text-slate-400 text-xs font-medium">{matchingVariant.name}</div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center gap-2 text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full border border-primary/20 group-hover:bg-primary/20 transition-colors">
+                                                    <span>INCELE</span>
+                                                    <Settings size={14} className="group-hover:rotate-90 transition-transform duration-500" />
+                                                </div>
                                             </div>
                                         </button>
                                     );
-                                })}
-                            </div>
+                                }
+
+                                const txValue = (currentTrim as any)?.transmission_type || 'Automatic';
+                                return (
+                                    <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-4 flex items-center gap-4">
+                                        <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400">
+                                            <Settings size={20} />
+                                        </div>
+                                        <div>
+                                            <div className="text-slate-200 font-bold">{txValue}</div>
+                                            <div className="text-slate-500 text-xs">Transmission</div>
+                                        </div>
+                                    </div>
+                                );
+                            })()}
                         </div>
 
-                        {/* Actions */}
                         <div className="flex gap-3 pt-2">
                             <button
                                 onClick={() => currentTrim && addToCompare(currentTrim, normalizedSpecs)}
@@ -448,11 +411,9 @@ function VehicleDetails() {
                                 Tech Sheet
                             </button>
                         </div>
-
                     </div>
                 </div>
 
-                {/* BOTTOM SECTION: SPECS */}
                 <div className="space-y-6">
                     <h2 className="text-2xl font-bold text-white flex items-center gap-3">
                         <Info size={24} className="text-blue-400" />
@@ -500,8 +461,17 @@ function VehicleDetails() {
                         })}
                     </div>
                 </div>
-
             </main>
+
+            <AnimatePresence>
+                {expandedVariantCode && (
+                    <DSGVariantModal
+                        key="dsg-modal"
+                        variant={DSG_VARIANTS.find(v => v.code === expandedVariantCode)!}
+                        onClose={() => setExpandedVariantCode(null)}
+                    />
+                )}
+            </AnimatePresence>
         </div>
     );
 }

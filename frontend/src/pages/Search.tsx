@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 interface Brand {
     id: number;
     name: string;
-    logo?: string;
+    logo_url?: string;
     created_at?: string;
 }
 
@@ -88,15 +88,18 @@ function Search() {
                             >
                                 {/* Brand Logo Container */}
                                 <div className="relative h-24 bg-white/5 flex items-center justify-center p-4">
-                                    {brand.logo ? (
+                                    {brand.logo_url ? (
                                         <img
-                                            src={brand.logo}
+                                            src={brand.logo_url}
                                             alt={brand.name}
-                                            className="w-full h-full object-contain scale-150 group-hover:scale-[1.65] transition-transform duration-300"
+                                            className={`w-full h-full object-contain transition-transform duration-300 ${['BMW', 'Volkswagen'].includes(brand.name)
+                                                    ? 'scale-[1.12] group-hover:scale-[1.24]'
+                                                    : 'scale-150 group-hover:scale-[1.65]'
+                                                }`}
                                         />
                                     ) : brand.name === 'Audi' ? (
                                         <img
-                                            src="/images/audi-logo.png"
+                                            src="/images/logos/audi-logo.png"
                                             alt="Audi Logo"
                                             className="w-full h-full object-contain scale-150 group-hover:scale-[1.65] transition-transform duration-300"
                                         />

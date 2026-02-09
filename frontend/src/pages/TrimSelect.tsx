@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { detectTransmissionVariant } from '../utils/dsgMatcher';
 
 interface Trim {
     id: number;
@@ -60,7 +61,7 @@ function TrimSelect() {
                     const modelsRes = await fetch(`${API_BASE_URL}/api/brands/${brand.id}/models`);
                     if (!modelsRes.ok) throw new Error('Modeller yüklenemedi');
                     const modelsData = await modelsRes.json();
-                    const models = modelsData.value || [];
+                    const models = modelsData?.value || [];
                     const model = models.find((m: any) => m.name.toLowerCase() === modelName.toLowerCase());
                     if (!model) throw new Error('Model bulunamadı');
 
@@ -68,7 +69,7 @@ function TrimSelect() {
                     const gensRes = await fetch(`${API_BASE_URL}/api/models/${model.id}/generations`);
                     if (!gensRes.ok) throw new Error('Nesiller yüklenemedi');
                     const gensData = await gensRes.json();
-                    const generationsList = Array.isArray(gensData) ? gensData : (gensData.value || []);
+                    const generationsList = !gensData ? [] : (Array.isArray(gensData) ? gensData : (gensData.value || []));
 
                     const targetGen = generationsList.find((g: any) => g.code.toLowerCase() === generationCode.toLowerCase());
                     if (!targetGen) throw new Error('Nesil bulunamadı');
@@ -89,8 +90,8 @@ function TrimSelect() {
                 if (!trimRes.ok) throw new Error('Motor seçenekleri yüklenemedi');
                 const trimData = await trimRes.json();
 
-                // Handle both wrapped and unwrapped responses
-                const trimsList = Array.isArray(trimData) ? trimData : (trimData.value || []);
+                // Handle both wrapped and unwrapped responses, including null
+                const trimsList = !trimData ? [] : (Array.isArray(trimData) ? trimData : (trimData.value || []));
                 setTrims(trimsList);
             } catch (err: any) {
                 console.error(err);
@@ -183,7 +184,9 @@ function TrimSelect() {
                                     <p className="text-gray-400 text-sm">
                                         {trim.end_year
                                             ? `${trim.start_year || trim.year} - ${trim.end_year}`
-                                            : `${trim.start_year || trim.year} - Devam ediyor`}
+                                            : generation?.end_year
+                                                ? `${trim.start_year || trim.year} - ${generation.end_year}`
+                                                : `${trim.start_year || trim.year} - Devam ediyor`}
                                     </p>
                                 </div>
 
@@ -219,12 +222,20 @@ function TrimSelect() {
                                             <span className="text-white font-medium">{trim.transmission_type}</span>
                                         </div>
                                     )}
-                                    {trim.transmission_code && (
-                                        <div className="flex justify-between items-center pb-2 border-b border-white/10">
-                                            <span className="text-gray-400 text-sm">Şanzıman Tipi</span>
-                                            <span className="text-white font-medium">{trim.transmission_code}</span>
-                                        </div>
-                                    )}
+                                    {/* Smart DSG Detection Logic */}
+                                    {(() => {
+                                        // Try to detect the variant intelligently
+                                        const detectedVariant = detectTransmissionVariant(modelName || '', trim, brandName);
+                                        // Prefer detected code, fallback to DB code
+                                        const displayCode = detectedVariant ? detectedVariant.code : trim.transmission_code;
+
+                                        return displayCode ? (
+                                            <div className="flex justify-between items-center pb-2 border-b border-white/10">
+                                                <span className="text-gray-400 text-sm">Şanzıman Tipi</span>
+                                                <span className="text-white font-medium">{displayCode}</span>
+                                            </div>
+                                        ) : null;
+                                    })()}
                                     {trim.drivetrain && (
                                         <div className="flex justify-between items-center pb-2 border-b border-white/10">
                                             <span className="text-gray-400 text-sm">Çekiş</span>

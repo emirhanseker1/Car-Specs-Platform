@@ -6,10 +6,10 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/emirh/car-specs/backend/internal/database"
-	"github.com/emirh/car-specs/backend/internal/models"
-	"github.com/emirh/car-specs/backend/internal/repository"
-	"github.com/emirh/car-specs/backend/internal/service"
+	"github.com/emirh/car-specs-ai/backend/internal/database"
+	"github.com/emirh/car-specs-ai/backend/internal/models"
+	"github.com/emirh/car-specs-ai/backend/internal/repository"
+	"github.com/emirh/car-specs-ai/backend/internal/service"
 )
 
 func main() {

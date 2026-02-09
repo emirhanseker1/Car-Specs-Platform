@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/emirh/car-specs/backend/internal/service"
+	"github.com/emirh/car-specs-ai/backend/internal/service"
 )
 
 type GenerationHandler struct {

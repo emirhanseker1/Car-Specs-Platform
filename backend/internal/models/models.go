@@ -19,10 +19,10 @@ type Model struct {
 	Name      string    `db:"name" json:"name"`
 	BodyStyle *string   `db:"body_style" json:"body_style,omitempty"`
 	Segment   *string   `db:"segment" json:"segment,omitempty"`
+	ImageURL  *string   `db:"image_url" json:"image_url,omitempty"` // Added for model-level images
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 
-	// Relationships (populated via joins)
 	// Relationships (populated via joins)
 	Brand *Brand `db:"-" json:"brand,omitempty"`
 }

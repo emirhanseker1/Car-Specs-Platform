@@ -13,10 +13,7 @@ interface Generation {
     image_url?: string;
 }
 
-interface GenerationsResponse {
-    value: Generation[];
-    Count: number;
-}
+import { getGenerationStyle } from '../utils/generationStyles';
 
 const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:8080';
 
@@ -37,13 +34,9 @@ export default function GenerationSelect() {
 
         if (!brandName || !modelName) return;
 
-
         const fetchModelId = async () => {
             try {
-                console.log(`🔍 Route params - brandName: "${brandName}", modelName: "${modelName}"`);
-
                 // Step 1: Get brand ID from brand name
-                console.log(`Step 1: Fetching brand ID for: ${brandName}`);
                 const brandsResponse = await fetch(`${API_BASE_URL}/api/brands`);
                 if (!brandsResponse.ok) {
                     throw new Error('Markalar yüklenemedi');
@@ -56,10 +49,8 @@ export default function GenerationSelect() {
                 if (!brand || !brand.id) {
                     throw new Error('Marka bulunamadı');
                 }
-                console.log(`Found brand ID: ${brand.id}`);
 
                 // Step 2: Fetch models using numeric brand ID
-                console.log(`Step 2: Fetching models for brand ID: ${brand.id}`);
                 const modelsResponse = await fetch(`${API_BASE_URL}/api/brands/${brand.id}/models`);
 
                 if (!modelsResponse.ok) {
@@ -68,12 +59,10 @@ export default function GenerationSelect() {
                 }
 
                 const data = await modelsResponse.json();
-                console.log('Models API response:', data);
-                const models = data.value || [];
+                const models = data?.value || [];
 
                 // Find matching model
                 const model = models.find((m: any) => m.name === modelName);
-                console.log('Found model:', model);
 
                 if (model && model.id) {
                     setModelId(model.id.toString());
@@ -87,7 +76,6 @@ export default function GenerationSelect() {
                 setLoading(false);
             }
         };
-
 
         fetchModelId();
     }, [routeModelId, brandName, modelName]);
@@ -104,7 +92,7 @@ export default function GenerationSelect() {
                 const data = await response.json();
 
                 // Handle both wrapped and unwrapped responses
-                const generationsList = Array.isArray(data) ? data : (data.value || []);
+                const generationsList = !data ? [] : (Array.isArray(data) ? data : (data.value || []));
                 setGenerations(generationsList);
             } catch (err: any) {
                 setError(err.message);
@@ -175,25 +163,21 @@ export default function GenerationSelect() {
                                     ? `/brand/${brandName}/${modelName}/${gen.code}`
                                     : `/generations/${gen.id}/trims`
                                 }
-                                className="group bg-black/40 backdrop-blur-md border border-white/10 rounded-xl shadow-lg hover:shadow-2xl hover:border-primary/50 transition-all overflow-hidden"
+                                className="group bg-black/40 backdrop-blur-md border border-white/10 rounded-xl shadow-lg hover:shadow-2xl hover:border-primary/50 transition-[transform,border,shadow] duration-300 overflow-hidden"
                             >
                                 {/* Generation Image */}
                                 {gen.image_url && (
-                                    <div className="relative h-48 overflow-hidden bg-black/20">
+                                    <div className="relative h-48 overflow-hidden flex items-center justify-center p-4">
                                         <img
                                             src={gen.image_url}
                                             alt={`${gen.code} ${gen.name || ''}`}
-                                            className={`w-full h-full object-cover object-center transition-transform duration-300 ${['8v', '8p'].includes(gen.code.toLowerCase())
-                                                ? 'scale-90 group-hover:scale-100'
-                                                : 'group-hover:scale-105'
+                                            className={`max-w-full max-h-full object-contain object-center transition-transform duration-300 ${getGenerationStyle(gen.code, brandName)
                                                 }`}
                                             onError={(e) => {
                                                 // Hide image if it fails to load
                                                 e.currentTarget.style.display = 'none';
                                             }}
                                         />
-                                        {/* Overlay gradient */}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                                     </div>
                                 )}
 

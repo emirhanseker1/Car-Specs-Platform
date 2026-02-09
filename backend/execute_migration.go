@@ -10,10 +10,9 @@ import (
 )
 
 func main() {
-	// Open database
 	db, err := sql.Open("sqlite", "./vehicles.db")
 	if err != nil {
-		log.Fatal("Failed to open database:", err)
+		log.Fatal(err)
 	}
 	defer db.Close()
 
@@ -23,36 +22,37 @@ func main() {
 		log.Fatal("Failed to enable foreign keys:", err)
 	}
 
-	// Read migration file
-	sqlBytes, err := os.ReadFile("./migrations/008_fix_audi_a3_data.sql")
+	fmt.Println("🚀 Starting A4 Data Population...")
+
+	// Execute 013 script
+	fmt.Println("Applying 013_populate_audi_a4_detailed.sql...")
+	sqlBytes, err := os.ReadFile("./migrations/013_populate_audi_a4_detailed.sql")
 	if err != nil {
 		log.Fatal("Failed to read migration file:", err)
 	}
 
-	// Execute migration
-	fmt.Println("Executing migration 008_fix_audi_a3_data.sql...")
 	_, err = db.Exec(string(sqlBytes))
 	if err != nil {
-		log.Fatal("Failed to execute migration:", err)
+		log.Fatal("Failed to execute 013 script:", err)
 	}
 
-	fmt.Println("✅ Migration executed successfully!")
+	fmt.Println("✅ A4 Data Population Complete!")
 
-	// Verify results
+	// Verify
 	var genCount, trimCount int
+	// Get count of A4 generations
+	db.QueryRow(`
+		SELECT COUNT(*) FROM generations 
+		WHERE model_id = (SELECT id FROM models WHERE name = 'A4')
+	`).Scan(&genCount)
 
-	err = db.QueryRow("SELECT COUNT(*) FROM generations WHERE model_id = 1").Scan(&genCount)
-	if err != nil {
-		log.Fatal("Failed to count generations:", err)
-	}
+	// Get count of A4 trims
+	db.QueryRow(`
+		SELECT COUNT(*) FROM trims 
+		JOIN generations ON trims.generation_id = generations.id 
+		JOIN models ON generations.model_id = models.id 
+		WHERE models.name = 'A4'
+	`).Scan(&trimCount)
 
-	err = db.QueryRow("SELECT COUNT(*) FROM trims WHERE generation_id IN (SELECT id FROM generations WHERE model_id = 1)").Scan(&trimCount)
-	if err != nil {
-		log.Fatal("Failed to count trims:", err)
-	}
-
-	fmt.Printf("\n📊 Results:\n")
-	fmt.Printf("   - A3 Generations: %d\n", genCount)
-	fmt.Printf("   - A3 Motor Trims: %d\n", trimCount)
-	fmt.Println("\n✅ All data loaded successfully!")
+	fmt.Printf("Final Stats: %d Generations, %d Trims for A4.\n", genCount, trimCount)
 }

@@ -1,16 +1,15 @@
-module github.com/emirh/car-specs/backend
+module github.com/emirh/car-specs-ai/backend
 
 go 1.24.0
 
 require (
 	github.com/PuerkitoBio/goquery v1.11.0
 	github.com/glebarez/go-sqlite v1.22.0
-	github.com/glebarez/sqlite v1.11.0
 	github.com/gocolly/colly/v2 v2.3.0
 	github.com/joho/godotenv v1.5.1
 	github.com/mattn/go-sqlite3 v1.14.33
 	gorm.io/gorm v1.31.1
-	modernc.org/sqlite v1.44.2
+	modernc.org/sqlite v1.44.3
 )
 
 require (

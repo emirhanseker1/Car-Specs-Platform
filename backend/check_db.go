@@ -3,35 +3,39 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"path/filepath"
-	"runtime"
+	"log"
 
 	_ "modernc.org/sqlite"
 )
 
 func main() {
-	_, b, _, _ := runtime.Caller(0)
-	basepath := filepath.Dir(b)
-	dbPath := filepath.Join(basepath, "vehicles.db")
-	fmt.Printf("Checking DB at: %s\n", dbPath)
-
-	db, err := sql.Open("sqlite", dbPath)
+	db, err := sql.Open("sqlite", "./vehicles.db")
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	defer db.Close()
 
-	rows, err := db.Query("SELECT id, name, transmission_type FROM trims WHERE generation_id = 1")
+	modelID := 1 // A3
+	fmt.Printf("\nAnalyzing generations for Model ID: %d (A3)\n", modelID)
+
+	// Query WITHOUT Grouping to see duplicates
+	rows, err := db.Query("SELECT id, code, name, image_url FROM generations WHERE model_id = ?", modelID)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	defer rows.Close()
 
-	fmt.Println("--- TRIMS ---")
 	for rows.Next() {
 		var id int
-		var name, trans string
-		rows.Scan(&id, &name, &trans)
-		fmt.Printf("ID: %d | Name: %s | Trans: %s\n", id, name, trans)
+		var code, gName string
+		var img sql.NullString
+		rows.Scan(&id, &code, &gName, &img)
+
+		imgVal := "<NULL>"
+		if img.Valid {
+			imgVal = img.String
+		}
+
+		fmt.Printf("ID: %d | Code: %-4s | Name: %-20s | Img: %s\n", id, code, gName, imgVal)
 	}
 }

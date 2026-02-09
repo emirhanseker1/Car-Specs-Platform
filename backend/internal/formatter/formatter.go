@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/emirh/car-specs/backend/internal/models"
+	"github.com/emirh/car-specs-ai/backend/internal/models"
 )
 
 // FormatTransmission converts raw transmission codes to Turkish

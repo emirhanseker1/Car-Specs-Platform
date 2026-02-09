@@ -1,55 +1,95 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Package } from 'lucide-react';
+import { api } from '../services/api';
+import type { FeaturedTrim } from '../types';
+import { getGenerationStyle } from '../utils/generationStyles';
 
-interface FeaturedTrim {
-    id: number;
-    name: string;
-    year: number;
-    image_url?: string;
-    fuel_type?: string;
-    transmission_type?: string;
-    power_hp?: number;
-    model?: {
-        id: number;
-        name: string;
-        brand?: {
-            id: number;
-            name: string;
-        };
-    };
-}
 
-const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:8080';
 
 function Home() {
-    const [featuredTrims, setFeaturedTrims] = useState<FeaturedTrim[]>([]);
+    // Local interface for our smart object
+    interface SmartFeaturedTrim extends FeaturedTrim {
+        linkUrl: string;
+        generationCode: string;
+    }
+
+    const [featuredTrims, setFeaturedTrims] = useState<SmartFeaturedTrim[]>([]);
     const [featuredLoading, setFeaturedLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Fetch featured trims
-    useEffect(() => {
+    const fetchRandomVehicle = async (): Promise<SmartFeaturedTrim | null> => {
+        try {
+            // 1. Get Random Brand
+            const brands = await api.getBrands();
+            if (!brands.length) return null;
+            const randomBrand = brands[Math.floor(Math.random() * brands.length)];
+
+            // 2. Get Random Model
+            const modelsData = await api.getModels(randomBrand.id);
+            const models = modelsData?.value || [];
+            if (!models.length) return null;
+            const randomModel = models[Math.floor(Math.random() * models.length)];
+
+            // 3. Get Random Generation
+            const gensData = await api.getGenerations(randomModel.id);
+            const generations = !gensData ? [] : (Array.isArray(gensData) ? gensData : (gensData.value || []));
+            if (!generations.length) return null;
+            const randomGen = generations[Math.floor(Math.random() * generations.length)];
+
+            // 4. Get Random Trim
+            const trimsData = await api.getTrims(randomGen.id);
+            const trims = !trimsData ? [] : (Array.isArray(trimsData) ? trimsData : (trimsData.value || []));
+            if (!trims.length) return null;
+            const randomIndex = Math.floor(Math.random() * trims.length);
+            const randomTrim = trims[randomIndex];
+
+            // 5. Construct Smart Object
+            return {
+                ...randomTrim,
+                // Fallback to generation image if specific trim image is missing
+                image_url: randomTrim.image_url || randomGen.image_url,
+                linkUrl: `/brand/${randomBrand.name}/${randomModel.name}/${randomGen.code}/${randomIndex + 1}`,
+                generationCode: randomGen.code,
+                model: {
+                    name: randomModel.name,
+                    brand: {
+                        name: randomBrand.name
+                    }
+                }
+            } as SmartFeaturedTrim;
+
+        } catch (e) {
+            console.warn('Failed to fetch a random vehicle:', e);
+            return null;
+        }
+    };
+
+    const loadFeatured = async () => {
         setFeaturedLoading(true);
-        fetch(`${API_BASE_URL}/api/featured`)
-            .then(async (res) => {
-                if (!res.ok) throw new Error('Failed to fetch featured');
-                return res.json();
-            })
-            .then((data: FeaturedTrim[]) => {
-                setFeaturedTrims(data || []);
-                setFeaturedLoading(false);
-            })
-            .catch((err) => {
-                console.error('Failed to fetch featured:', err);
-                setFeaturedTrims([]);
-                setFeaturedLoading(false);
-                setError('Popüler modeller yüklenemedi');
-            });
+        setError(null);
+        try {
+            // Fetch 4 items in parallel
+            const promises = Array(4).fill(null).map(() => fetchRandomVehicle());
+            const results = await Promise.all(promises);
+            // Filter out nulls
+            const valid = results.filter((r): r is SmartFeaturedTrim => r !== null);
+            setFeaturedTrims(valid);
+        } catch (err) {
+            console.error('Failed to load featured:', err);
+            setError('Popüler modeller yüklenemedi');
+        } finally {
+            setFeaturedLoading(false);
+        }
+    };
+
+    // Initial Fetch
+    useEffect(() => {
+        loadFeatured();
     }, []);
 
     const retryAllFetches = () => {
-        setError(null);
-        window.location.reload();
+        loadFeatured();
     };
 
     return (
@@ -81,26 +121,7 @@ function Home() {
                     </div>
                 </div>
 
-                {/* DSG Rehberi Floating Button - Left Side */}
-                <Link
-                    to="/guides/transmission/dsg"
-                    className="fixed left-6 top-1/3 z-40 group"
-                >
-                    <div className="flex items-center gap-3 pl-2 pr-4 py-2 bg-black/20 backdrop-blur-md rounded-full border border-white/10 hover:bg-white/5 transition-all duration-300 group-hover:scale-105">
-                        <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                        </div>
-                        <div className="hidden md:block">
-                            <span className="font-medium text-white text-sm">DSG Rehberi</span>
-                        </div>
-                        <svg className="w-4 h-4 text-white/50 group-hover:text-white group-hover:translate-x-0.5 transition-all hidden md:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </Link>
+
 
                 {/* Popular Models Section - At the bottom */}
                 <div className="w-full bg-gradient-to-t from-black via-black/80 to-transparent pt-32 pb-12 px-6 sm:px-8 lg:px-12">
@@ -147,7 +168,7 @@ function Home() {
                             {featuredTrims.map((trim) => (
                                 <Link
                                     key={trim.id}
-                                    to={`/vehicle/${trim.id}`}
+                                    to={trim.linkUrl}
                                     className="group relative overflow-hidden rounded-3xl bg-white/5 border border-white/10 hover:border-primary/50 hover:bg-white/10 transition-all duration-300"
                                 >
                                     {/* Image */}
@@ -156,7 +177,7 @@ function Home() {
                                             <img
                                                 src={trim.image_url}
                                                 alt={`${trim.model?.brand?.name} ${trim.name}`}
-                                                className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-700"
+                                                className={`w-full h-full object-contain p-2 transition-transform duration-700 ${getGenerationStyle(trim.generationCode || '', trim.model?.brand?.name)}`}
                                                 onError={(e) => {
                                                     (e.target as HTMLImageElement).style.display = 'none';
                                                 }}

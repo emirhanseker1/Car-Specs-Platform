@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/emirh/car-specs/backend/internal/models"
+	"github.com/emirh/car-specs-ai/backend/internal/models"
 )
 
 type GenerationRepository struct {

@@ -6,13 +6,19 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/emirh/car-specs/backend/internal/database"
-	"github.com/emirh/car-specs/backend/internal/handlers"
-	"github.com/emirh/car-specs/backend/internal/repository"
-	"github.com/emirh/car-specs/backend/internal/service"
+	"github.com/emirh/car-specs-ai/backend/internal/database"
+	"github.com/emirh/car-specs-ai/backend/internal/handlers"
+	"github.com/emirh/car-specs-ai/backend/internal/repository"
+	"github.com/emirh/car-specs-ai/backend/internal/service"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	// Load environment variables
+	if err := godotenv.Load(); err != nil {
+		log.Println("Warning: No .env file found")
+	}
+
 	// Initialize database
 	if err := database.InitDB(); err != nil {
 		log.Fatalf("Failed to initialize database: %v", err)
@@ -30,12 +36,14 @@ func main() {
 	modelService := service.NewModelService(modelRepo, brandRepo)
 	generationService := service.NewGenerationService(generationRepo, modelRepo)
 	trimService := service.NewTrimService(trimRepo, modelRepo)
+	chatService := service.NewChatService()
 
 	// Initialize handlers
 	brandHandler := handlers.NewBrandHandler(brandService)
 	modelHandler := handlers.NewModelHandler(modelService, trimService, brandService)
 	generationHandler := handlers.NewGenerationHandler(generationService)
 	trimHandler := handlers.NewTrimHandler(trimService)
+	chatHandler := handlers.NewChatHandler(chatService)
 
 	// Setup routes
 	mux := http.NewServeMux()
@@ -130,6 +138,9 @@ func main() {
 
 	// Featured route for homepage
 	mux.HandleFunc("/api/featured", trimHandler.HandleGetFeaturedTrims)
+
+	// Chat route
+	mux.HandleFunc("/api/chat", chatHandler.HandleChat)
 
 	// Health check
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
