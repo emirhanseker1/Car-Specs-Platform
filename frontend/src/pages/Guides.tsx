@@ -107,6 +107,8 @@ export default function Guides() {
                     navigate('/guides/transmission');
                   } else if (isEngine) {
                     navigate('/guides/engine');
+                  } else if (guide.id === 'engines') {
+                    navigate('/guides/engines');
                   } else {
                     setSelectedGuide(guide);
                   }

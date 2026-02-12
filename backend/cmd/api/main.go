@@ -30,12 +30,14 @@ func main() {
 	modelRepo := repository.NewModelRepository(database.DB)
 	generationRepo := repository.NewGenerationRepository(database.DB)
 	trimRepo := repository.NewTrimRepository(database.DB)
+	engineRepo := repository.NewEngineRepository(database.DB)
 
 	// Initialize services
 	brandService := service.NewBrandService(brandRepo)
 	modelService := service.NewModelService(modelRepo, brandRepo)
 	generationService := service.NewGenerationService(generationRepo, modelRepo)
 	trimService := service.NewTrimService(trimRepo, modelRepo)
+	engineService := service.NewEngineService(engineRepo)
 	chatService := service.NewChatService()
 
 	// Initialize handlers
@@ -43,6 +45,7 @@ func main() {
 	modelHandler := handlers.NewModelHandler(modelService, trimService, brandService)
 	generationHandler := handlers.NewGenerationHandler(generationService)
 	trimHandler := handlers.NewTrimHandler(trimService)
+	engineHandler := handlers.NewEngineHandler(engineService)
 	chatHandler := handlers.NewChatHandler(chatService)
 
 	// Setup routes
@@ -139,6 +142,20 @@ func main() {
 	// Featured route for homepage
 	mux.HandleFunc("/api/featured", trimHandler.HandleGetFeaturedTrims)
 
+	// Engine routes
+	mux.HandleFunc("/api/engines", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			engineHandler.ListEngines(w, r)
+		case http.MethodPost:
+			engineHandler.CreateEngine(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+	mux.HandleFunc("/api/engines/code/", engineHandler.GetEngineByCode)
+	mux.HandleFunc("/api/engines/", engineHandler.HandleEngine)
+
 	// Chat route
 	mux.HandleFunc("/api/chat", chatHandler.HandleChat)
 
@@ -169,6 +186,10 @@ func main() {
 	log.Printf("   - GET    /api/generations/{generationId}")
 	log.Printf("   - GET    /api/generations/{generationId}/trims")
 	log.Printf("   - GET    /api/models/{modelId}/trims")
+	log.Printf("   - GET    /api/engines")
+	log.Printf("   - POST   /api/engines")
+	log.Printf("   - GET    /api/engines/{id}")
+	log.Printf("   - GET    /api/engines/code/{code}")
 	log.Printf("   - GET    /api/search")
 	log.Printf("   - GET    /health")
 

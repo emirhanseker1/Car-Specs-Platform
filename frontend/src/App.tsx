@@ -12,6 +12,7 @@ import Compare from './pages/Compare.tsx';
 import Guides from './pages/Guides.tsx';
 import TransmissionGuide from './pages/TransmissionGuide.tsx';
 import DSGVariantsGuide from './pages/DSGVariantsGuide.tsx';
+import EnginesGuide from './pages/EnginesGuide.tsx';
 import EngineTermsGuide from './pages/EngineTermsGuide.tsx';
 import About from './pages/About.tsx';
 import EngineSelect from './pages/EngineSelect.tsx';
@@ -36,6 +37,7 @@ function App() {
           <Route path="/guides" element={<Guides />} />
           <Route path="/guides/transmission" element={<TransmissionGuide />} />
           <Route path="/guides/transmission/dsg" element={<DSGVariantsGuide />} />
+          <Route path="/guides/engines" element={<EnginesGuide />} />
           <Route path="/guides/engine" element={<EngineTermsGuide />} />
           <Route path="/about" element={<About />} />
 

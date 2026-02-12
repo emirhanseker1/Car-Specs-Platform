@@ -41,6 +41,7 @@ type Trim struct {
 	Generation *string `db:"generation" json:"generation,omitempty"` // Kept for backwards compatibility
 	IsFacelift bool    `db:"is_facelift" json:"is_facelift"`
 	Market     string  `db:"market" json:"market"`
+	EngineID   *int64  `db:"engine_id" json:"engine_id,omitempty"` // Link to engines table
 
 	// Engine Specifications
 	EngineType     *string `db:"engine_type" json:"engine_type,omitempty"`
@@ -98,6 +99,7 @@ type Trim struct {
 	// Relationships
 	GenerationObj *Generation `db:"-" json:"generation_obj,omitempty"` // Changed from Model
 	Model         *Model      `db:"-" json:"model,omitempty"`          // Kept via Generation
+	EngineObj     *Engine     `db:"-" json:"engine,omitempty"`         // Engine details
 	Specs         []Spec      `db:"-" json:"specs,omitempty"`
 }
 

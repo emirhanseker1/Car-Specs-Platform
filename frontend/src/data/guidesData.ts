@@ -15,7 +15,7 @@ export const GUIDES: GuideArticle[] = [
     {
         id: 'transmission',
         title: 'Şanzıman Dünyası: Otomatik, DCT, CVT',
-        summary: 'Tork konvertörlü tam otomatikler, çift kavramalı (DCT) sistemler ve sürekli değişken (CVT) şanzımanlar arasındaki farklar neler?',
+        summary: 'Tork konvertörlü tam otomatikler, çift kavramalı (DCT) sistemler ve süreksi değişken (CVT) şanzımanlar arasındaki farklar neler?',
         sections: [
             {
                 title: 'Tork Konvertörlü (Tam Otomatik)',
@@ -33,6 +33,12 @@ export const GUIDES: GuideArticle[] = [
                 imagePlaceholder: 'cvt_pulley_system'
             }
         ]
+    },
+    {
+        id: 'engines',
+        title: 'Motor Kodları Rehberi',
+        summary: 'Popüler motor kodları, kronik sorunlar, bakım önerileri ve teknik detaylar. EA888, N47, CRUA ve daha fazlası...',
+        sections: []
     },
     {
         id: 'engine',
